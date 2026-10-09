@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# IntelliJ / VS Code
+.idea/
+.vscode/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Backend
+backend/target/
+
+# Python
+.venv/
+.venv-import/
+__pycache__/
+*.pyc
+
+# Variables sensibles
+.env
+.env.*
+application-local.properties
+
+# Logs
+*.log
