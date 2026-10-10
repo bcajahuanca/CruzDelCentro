@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Unidad } from '../types/Unidad'
 import type { UnidadDetalle } from '../types/UnidadDetalle'
 import '../styles/unidades.css'
+import {
+  listarUnidades,
+  obtenerUnidadPorId,
+  actualizarUnidad
+} from '../services/unidadService'
 
 function UnidadesPage() {
   const [unidades, setUnidades] = useState<Unidad[]>([])
@@ -9,7 +14,7 @@ function UnidadesPage() {
   const [error, setError] = useState('')
   const [modoEdicion, setModoEdicion] = useState(false)
 
-  const [unidadesSeleccionadas, setUnidadesSeleccionadas] = useState<Unidad | null>(null)
+  // const [unidadesSeleccionadas, setUnidadesSeleccionadas] = useState<Unidad | null>(null)
   const [unidadSeleccionada, setUnidadSeleccionada] =
     useState<UnidadDetalle | null>(null)
   
@@ -30,24 +35,8 @@ function UnidadesPage() {
   useEffect(() => {
     const cargarUnidades = async () => {
       try {
-        const token = localStorage.getItem('token')
-
-        const response = await fetch(
-          'http://localhost:8080/api/unidades',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        )
-
-        if (!response.ok) {
-          throw new Error('No se pudieron cargar las unidades')
-        }
-
-        const data = await response.json()
+        const data = await listarUnidades()
         setUnidades(data)
-
       } catch (err) {
         setError('Error al cargar las unidades')
       } finally {
@@ -80,22 +69,7 @@ function UnidadesPage() {
     try {
       setCargandoDetalle(true)
 
-      const token = localStorage.getItem('token')
-
-      const response = await fetch(
-        `http://localhost:8080/api/unidades/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('No se pudo cargar la unidad')
-      }
-
-      const data = await response.json()
+      const data = await obtenerUnidadPorId(id)
       setUnidadSeleccionada(data)
 
       setFormEdicion({
@@ -119,34 +93,17 @@ function UnidadesPage() {
     if(!unidadSeleccionada) return
 
     try {
-      const token = localStorage.getItem('token')
 
-      const response = await fetch(
-        `http://localhost:8080/api/unidades/${unidadSeleccionada.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            placa: formEdicion.placa,
-            tipoVehiculo: formEdicion.tipoVehiculo,
-            anioFabricacion: formEdicion.anioFabricacion
-              ? parseInt(formEdicion.anioFabricacion)
-              : null,
-            estado: formEdicion.estado,
-            activo: formEdicion.activo,
-            observaciones: formEdicion.observaciones
-          })
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('No se pudieron guardar los cambios')
-      }
-
-      const data = await response.json()
+      const data = await actualizarUnidad(unidadSeleccionada.id, {
+        placa: formEdicion.placa,
+        tipoVehiculo: formEdicion.tipoVehiculo,
+        anioFabricacion: formEdicion.anioFabricacion
+          ? parseInt(formEdicion.anioFabricacion)
+          : null,
+        estado: formEdicion.estado,
+        activo: formEdicion.activo,
+        observaciones: formEdicion.observaciones
+      })
 
       setUnidadSeleccionada(data)
       setModoEdicion(false)
