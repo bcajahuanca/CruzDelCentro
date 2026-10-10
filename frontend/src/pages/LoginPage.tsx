@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import '../styles/login.css'
+import '../styles/logint.css'
 
 function LoginPage() {
   const [correo, setCorreo] = useState('')
