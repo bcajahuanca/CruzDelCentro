@@ -44,8 +44,6 @@ public class DataInitializer {
                 admin.getRoles().add(rolAdmin);
 
                 usuarioRepository.save(admin);
-
-                System.out.println("Usuario administrador creado");
             }
         };
     }

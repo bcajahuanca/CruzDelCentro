@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -39,21 +42,25 @@ public class AuthController {
         this.jwtEncoder = jwtEncoder;
     }
 
-    @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
-        System.out.println("=== ENTRO A /api/auth/ping ===");
-        return ResponseEntity.ok("AUTH PUBLIC OK");
+    @RestController 
+    @RequestMapping ("/api/test")
+    public class TestController {
+
+        @GetMapping
+        public Map<String, String> test() {
+            return Map.of(
+                    "mensaje", "TODO OK",
+                    "estado", "API funcionando"
+            );
+        }
+        
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> datos) {
 
-        System.out.println("=== ENTRO A /api/auth/login ===");
-
         String correo = datos.get("correo");
         String password = datos.get("password");
-
-        System.out.println("Correo recibido: " + correo);
 
         if (correo == null || password == null ||
                 correo.isBlank() || password.isBlank()) {
@@ -69,7 +76,6 @@ public class AuthController {
                 usuarioRepository.findByCorreoIgnoreCase(correo);
 
         if (usuarioOptional.isEmpty()) {
-        System.out.println("LOGIN FALLIDO: usuario no encontrado");
             return ResponseEntity.status(401)
                     .body(Map.of(
                             "mensaje",

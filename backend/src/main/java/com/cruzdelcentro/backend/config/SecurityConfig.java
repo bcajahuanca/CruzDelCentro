@@ -20,17 +20,19 @@ public class SecurityConfig {
 
     /*
      * CADENA 1
-     * Todo /api/auth/** es público.
-     * Aquí NO activamos OAuth2 Resource Server.
+     * Login y endpoint de prueba públicos.
      */
     @Bean
     @Order(1)
-    public SecurityFilterChain authSecurityFilterChain(
+    public SecurityFilterChain publicSecurityFilterChain(
             HttpSecurity http
     ) throws Exception {
 
         http
-                .securityMatcher("/api/auth/**")
+                .securityMatcher(
+                        "/api/auth/**",
+                        "/api/test"
+                )
 
                 .csrf(csrf -> csrf.disable())
 
