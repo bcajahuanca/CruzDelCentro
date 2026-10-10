@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../styles/logint.css'
-
+import { login } from '../services/authService'
 function LoginPage() {
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
@@ -17,31 +17,19 @@ function LoginPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          correo,
-          password,
-        }),
-      })
+      const data = await login({ correo, password })
 
-      const data = await response.json()
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('usuario', data.usuario)
+      localStorage.setItem('rol', data.rol)
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('usuario', data.usuario)
-        localStorage.setItem('rol', data.rol)
-
-        navigate('/dashboard')
-      } else {
-        setMensaje(data.mensaje)
-      }
+      navigate('/dashboard')
     } catch (error) {
-      console.error(error)
-      setMensaje('No se pudo conectar con el servidor')
+      if (error instanceof Error) {
+        setMensaje(error.message)
+      } else {
+        setMensaje('Error al iniciar sesión')
+      }
     }
   }
 
