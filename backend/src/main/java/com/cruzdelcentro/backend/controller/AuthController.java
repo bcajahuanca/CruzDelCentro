@@ -39,11 +39,21 @@ public class AuthController {
         this.jwtEncoder = jwtEncoder;
     }
 
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        System.out.println("=== ENTRO A /api/auth/ping ===");
+        return ResponseEntity.ok("AUTH PUBLIC OK");
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> datos) {
 
+        System.out.println("=== ENTRO A /api/auth/login ===");
+
         String correo = datos.get("correo");
         String password = datos.get("password");
+
+        System.out.println("Correo recibido: " + correo);
 
         if (correo == null || password == null ||
                 correo.isBlank() || password.isBlank()) {
@@ -59,6 +69,7 @@ public class AuthController {
                 usuarioRepository.findByCorreoIgnoreCase(correo);
 
         if (usuarioOptional.isEmpty()) {
+        System.out.println("LOGIN FALLIDO: usuario no encontrado");
             return ResponseEntity.status(401)
                     .body(Map.of(
                             "mensaje",
