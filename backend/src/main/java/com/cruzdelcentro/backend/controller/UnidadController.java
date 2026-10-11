@@ -4,14 +4,12 @@ import com.cruzdelcentro.backend.dto.UnidadDetalleResponse;
 import com.cruzdelcentro.backend.dto.UnidadResponse;
 import com.cruzdelcentro.backend.service.UnidadService;
 import com.cruzdelcentro.backend.dto.UnidadUpdateRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 @RestController
@@ -36,9 +34,14 @@ public class UnidadController {
     
     @PutMapping("/{id}")
     public UnidadDetalleResponse actualizar(
-        @PathVariable Long id, 
-        @RequestBody UnidadUpdateRequest resquest
+        @PathVariable Long id,
+        @RequestBody UnidadUpdateRequest request,
+        @AuthenticationPrincipal Jwt jwt
     ) {
-        return unidadService.actualizar(id, resquest);
+        return unidadService.actualizar(
+            id,
+            request,
+            jwt.getSubject()
+        );
     }
 }
