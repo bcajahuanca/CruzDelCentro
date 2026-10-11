@@ -17,6 +17,7 @@ import ReportesPage from './pages/ReportesPage'
 import UsuariosPage from './pages/UsuariosPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import MainLayout from './layouts/MainLayout'
+import IncidenciaDetallePage from './pages/IncidenciaDetallePage'
 
 function App() {
 
@@ -81,6 +82,11 @@ function App() {
           <Route
             path="/usuarios"
             element={<UsuariosPage />}
+          />
+
+          <Route
+            path="/incidencias/:id"
+            element={<IncidenciaDetallePage />}
           />
 
         </Route>

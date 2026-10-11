@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../styles/logint.css'
 import { login } from '../services/authService'
+import logo from '../assets/ccentro_logo.png'
 function LoginPage() {
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
@@ -36,6 +37,14 @@ function LoginPage() {
   return (
     <div className="login-container">
       <div className="login-card">
+
+        <div className="login-logo-container">
+          <img
+            src={logo}
+            alt="Transportes Cruz del Centro"
+            className="login-logo"
+          />
+        </div>
 
         <h1>Cruz del Centro</h1>
 

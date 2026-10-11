@@ -1,6 +1,5 @@
 package com.cruzdelcentro.backend.controller;
 
-import com.cruzdelcentro.backend.dto.HistorialEstadoResponse;
 import com.cruzdelcentro.backend.service.HistorialService;
 
 import org.springframework.http.HttpStatus;
@@ -9,8 +8,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/historial")
@@ -26,7 +23,8 @@ public class HistorialController {
     public Map<String, Object> listarEstados(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "") String busqueda,
-        @RequestParam(defaultValue = "TODOS") String estado
+        @RequestParam(defaultValue = "TODOS") String estado,
+        @RequestParam(defaultValue = "TODAS") String unidadCodigo
     ) {
         if (page < 0) {
             throw new ResponseStatusException(
@@ -50,7 +48,8 @@ public class HistorialController {
         return historialService.listarEstados(
             page,
             busqueda,
-            estado
+            estado,
+            unidadCodigo
         );
     }
 }

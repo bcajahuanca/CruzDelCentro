@@ -18,117 +18,132 @@ public class HistorialService {
     
 
     public Map<String, Object> listarEstados(
-        int pagina,
-        String busqueda,
-        String estado
-    ) {
-        int limite = 20;
-        int offset = pagina * limite;
+    int pagina,
+    String busqueda,
+    String estado,
+    String unidadCodigo
+) {
+    int limite = 20;
+    int offset = pagina * limite;
 
-        String filtro = """
-            FROM estado_unidad_historial h
-            JOIN unidad u ON u.id = h.unidad_id
-            WHERE (
-                ? = ''
-                OR LOWER(u.codigo) LIKE ?
-                OR LOWER(COALESCE(u.placa, '')) LIKE ?
-            )
-            AND (? = 'TODOS' OR h.estado = ?)
-            """;
+    String filtro = """
+        FROM estado_unidad_historial h
+        JOIN unidad u ON u.id = h.unidad_id
+        WHERE (
+            ? = ''
+            OR LOWER(u.codigo) LIKE ?
+            OR LOWER(COALESCE(u.placa, '')) LIKE ?
+        )
+        AND (? = 'TODOS' OR h.estado = ?)
+        AND (? = 'TODAS' OR u.codigo = ?)
+        """;
 
-        String texto = busqueda == null
-            ? ""
-            : busqueda.trim().toLowerCase();
+    String texto = busqueda == null
+        ? ""
+        : busqueda.trim().toLowerCase();
 
-        // Escapar caracteres especiales del LIKE
-        String patron = "%" +
-            texto.replace("\\", "\\\\")
-                .replace("%", "\\%")
-                .replace("_", "\\_") +
-            "%";
+    String patron = "%" +
+        texto.replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_") +
+        "%";
 
-        String estadoFiltro =
-            estado == null ? "TODOS" : estado;
+    String estadoFiltro =
+        estado == null ? "TODOS" : estado;
 
-        String sql = """
-            SELECT
-                h.id,
-                h.unidad_id,
-                u.codigo,
-                u.placa,
-                h.estado,
-                h.inicio,
-                h.fin,
-                h.motivo,
-                h.registrado_por
-            """ + filtro + """
-            ORDER BY h.inicio DESC, h.id DESC
-            LIMIT ? OFFSET ?
-            """;
+    String unidadFiltro =
+        unidadCodigo == null ? "TODAS" : unidadCodigo;
 
-        List<HistorialEstadoResponse> registros =
-            jdbcTemplate.query(
-                sql,
-                (rs, rowNum) -> new HistorialEstadoResponse(
-                    rs.getLong("id"),
-                    rs.getLong("unidad_id"),
-                    rs.getString("codigo"),
-                    rs.getString("placa"),
-                    rs.getString("estado"),
-                    rs.getTimestamp("inicio").toLocalDateTime(),
-                    rs.getTimestamp("fin") == null
-                        ? null
-                        : rs.getTimestamp("fin").toLocalDateTime(),
-                    rs.getString("motivo"),
-                    rs.getObject("registrado_por", Long.class)
-                ),
-                texto, patron, patron,
-                estadoFiltro, estadoFiltro,
-                limite, offset
-            );
+    String sql = """
+        SELECT
+            h.id,
+            h.unidad_id,
+            u.codigo,
+            u.placa,
+            h.estado,
+            h.inicio,
+            h.fin,
+            h.motivo,
+            h.registrado_por
+        """ + filtro + """
+        ORDER BY h.inicio DESC, h.id DESC
+        LIMIT ? OFFSET ?
+        """;
 
-        Long total = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) " + filtro,
-            Long.class,
-            texto, patron, patron,
-            estadoFiltro, estadoFiltro
+    List<HistorialEstadoResponse> registros =
+        jdbcTemplate.query(
+            sql,
+            (rs, rowNum) -> new HistorialEstadoResponse(
+                rs.getLong("id"),
+                rs.getLong("unidad_id"),
+                rs.getString("codigo"),
+                rs.getString("placa"),
+                rs.getString("estado"),
+                rs.getTimestamp("inicio").toLocalDateTime(),
+                rs.getTimestamp("fin") == null
+                    ? null
+                    : rs.getTimestamp("fin").toLocalDateTime(),
+                rs.getString("motivo"),
+                rs.getObject("registrado_por", Long.class)
+            ),
+            texto,
+            patron,
+            patron,
+            estadoFiltro,
+            estadoFiltro,
+            unidadFiltro,
+            unidadFiltro,
+            limite,
+            offset
         );
 
-        long cantidad = total == null ? 0 : total;
-        long totalPaginas =
-            (cantidad + limite - 1) / limite;
+    Long total = jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) " + filtro,
+        Long.class,
+        texto,
+        patron,
+        patron,
+        estadoFiltro,
+        estadoFiltro,
+        unidadFiltro,
+        unidadFiltro
+    );
 
-        Long totalGeneral = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM estado_unidad_historial",
-            Long.class
-        );
+    long cantidad = total == null ? 0 : total;
+    long totalPaginas =
+        (cantidad + limite - 1) / limite;
 
-        Long totalMantenimiento = jdbcTemplate.queryForObject(
-            """
-            SELECT COUNT(*)
-            FROM estado_unidad_historial
-            WHERE estado = 'EN_MANTENIMIENTO'
-            """,
-            Long.class
-        );
+    Long totalGeneral = jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM estado_unidad_historial",
+        Long.class
+    );
 
-        Long totalFueraServicio = jdbcTemplate.queryForObject(
-            """
-            SELECT COUNT(*)
-            FROM estado_unidad_historial
-            WHERE estado = 'FUERA_DE_SERVICIO'
-            """,
-            Long.class
-        );
+    Long totalMantenimiento = jdbcTemplate.queryForObject(
+        """
+        SELECT COUNT(*)
+        FROM estado_unidad_historial
+        WHERE estado = 'EN_MANTENIMIENTO'
+        """,
+        Long.class
+    );
 
-        return Map.of(
-            "registros", registros,
-            "paginaActual", pagina,
-            "totalRegistros", cantidad,
-            "totalPaginas", totalPaginas,
-            "totalGeneral", totalGeneral,
-            "totalMantenimiento", totalMantenimiento,
-            "totalFueraServicio", totalFueraServicio
-        );
-    }
+    Long totalFueraServicio = jdbcTemplate.queryForObject(
+        """
+        SELECT COUNT(*)
+        FROM estado_unidad_historial
+        WHERE estado = 'FUERA_DE_SERVICIO'
+        """,
+        Long.class
+    );
+
+    return Map.of(
+        "registros", registros,
+        "paginaActual", pagina,
+        "totalRegistros", cantidad,
+        "totalPaginas", totalPaginas,
+        "totalGeneral", totalGeneral,
+        "totalMantenimiento", totalMantenimiento,
+        "totalFueraServicio", totalFueraServicio
+    );
+}
 }

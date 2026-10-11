@@ -9,4 +9,5 @@ export interface UnidadDetalle {
   estado: string
   activo: boolean
   observaciones: string | null
+  motivoCambio: string | null
 }

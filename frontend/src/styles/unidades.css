@@ -1,8 +1,12 @@
-.unidades-page {
+.page-container {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1350px;
   margin: 0 auto;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  animation: historialEntrada 0.6s ease;
 }
+
 
 /* ENCABEZADO */
 
@@ -556,4 +560,25 @@
   .detalle-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.btn-descargar {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1f4e78;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-descargar:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.btn-descargar:active {
+  transform: translateY(0);
 }

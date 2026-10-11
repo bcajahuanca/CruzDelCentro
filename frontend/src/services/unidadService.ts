@@ -46,6 +46,7 @@ export const actualizarUnidad = async (
     estado: string
     activo: boolean
     observaciones: string
+    motivoCambio: string
   }
 ): Promise<UnidadDetalle> => {
 

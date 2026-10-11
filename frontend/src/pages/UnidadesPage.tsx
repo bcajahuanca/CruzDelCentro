@@ -1,6 +1,10 @@
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+
 import { useEffect, useMemo, useState } from 'react'
 import type { Unidad } from '../types/Unidad'
 import type { UnidadDetalle } from '../types/UnidadDetalle'
+
 import '../styles/unidades.css'
 import {
   listarUnidades,
@@ -29,7 +33,8 @@ function UnidadesPage() {
     anioFabricacion: '',
     estado: 'OPERATIVA',
     activo: true,
-    observaciones: ''
+    observaciones: '',
+    motivoCambio: ''
   })
 
   useEffect(() => {
@@ -65,6 +70,80 @@ function UnidadesPage() {
     })
   }, [unidades, busqueda, estadoFiltro])
 
+  const descargarUnidadesPDF = () => {
+    const unidadesFiltradas =
+      estadoFiltro === "TODOS"
+        ? unidades
+        : unidades.filter(
+            (unidad) => unidad.estado === estadoFiltro
+          )
+
+    if (unidadesFiltradas.length === 0) {
+      alert("No hay unidades para descargar")
+      return
+    }
+
+    const doc = new jsPDF({
+      orientation: "landscape"
+    })
+
+    doc.setFontSize(16)
+    doc.text("Reporte de Unidades - Cruz del Centro", 14, 15)
+
+    doc.setFontSize(10)
+    doc.text(
+      `Estado: ${
+        estadoFiltro === "TODOS"
+          ? "Todos los estados"
+          : estadoFiltro.replaceAll("_", " ")
+      }`,
+      14,
+      22
+    )
+
+    const filas = unidadesFiltradas.map((unidad) => [
+      unidad.codigo,
+      unidad.placa,
+      unidad.marca,
+      unidad.modelo,
+      unidad.tipoVehiculo,
+      unidad.anioFabricacion ?? "",
+      unidad.estado.replaceAll("_", " "),
+    ])
+
+    autoTable(doc, {
+      startY: 28,
+      head: [[
+        "Código",
+        "Placa",
+        "Marca",
+        "Modelo",
+        "Tipo",
+        "Año",
+        "Estado",
+      ]],
+      body: filas,
+      styles: {
+        fontSize: 8
+      },
+      headStyles: {
+        fontStyle: "bold"
+      },
+      columnStyles: {
+        7: {
+          cellWidth: 55
+        }
+      }
+    })
+
+    const nombreArchivo =
+      estadoFiltro === "TODOS"
+        ? "unidades_todas.pdf"
+        : `unidades_${estadoFiltro.toLowerCase()}.pdf`
+
+    doc.save(nombreArchivo)
+  }
+
   const verDetalle = async (id: number) => {
     try {
       setCargandoDetalle(true)
@@ -78,7 +157,8 @@ function UnidadesPage() {
         anioFabricacion: data.anioFabricacion?.toString() ?? '',
         estado: data.estado,
         activo: data.activo,
-        observaciones: data.observaciones ?? ''
+        observaciones: data.observaciones ?? '',
+        motivoCambio: ''
       })
 
       setModoEdicion(false)
@@ -92,6 +172,14 @@ function UnidadesPage() {
   const guardarCambios = async () => {
     if(!unidadSeleccionada) return
 
+    if (
+      formEdicion.estado !== unidadSeleccionada.estado &&
+      !formEdicion.motivoCambio.trim()
+    ) {
+      alert('Debes ingresar el motivo del cambio de estado')
+      return
+    }
+
     try {
 
       const data = await actualizarUnidad(unidadSeleccionada.id, {
@@ -102,7 +190,8 @@ function UnidadesPage() {
           : null,
         estado: formEdicion.estado,
         activo: formEdicion.activo,
-        observaciones: formEdicion.observaciones
+        observaciones: formEdicion.observaciones,
+        motivoCambio: formEdicion.motivoCambio
       })
 
       setUnidadSeleccionada(data)
@@ -135,7 +224,7 @@ function UnidadesPage() {
   }
 
   return (
-    <div className="unidades-page">
+    <div className="page-container">
 
       <div className="unidades-header">
         <div>
@@ -198,6 +287,14 @@ function UnidadesPage() {
             Fuera de servicio
           </option>
         </select>
+
+        <button
+          type="button"
+          className="btn-descargar"
+          onClick={descargarUnidadesPDF}
+        >
+          Descargar
+        </button>
 
       </div>
 
@@ -402,6 +499,25 @@ function UnidadesPage() {
 
                   </div>
 
+                  {formEdicion.estado !== unidadSeleccionada.estado && (
+                    <label className="campo-formulario campo-observaciones">
+                      <span>Motivo del cambio de estado *</span>
+
+                      <textarea
+                        placeholder="Ejemplo: El bus presenta fallas en el sistema de frenos..."
+                        value={formEdicion.motivoCambio}
+                        onChange={(e) =>
+                          setFormEdicion({
+                            ...formEdicion,
+                            motivoCambio: e.target.value
+                          })
+                        }
+                        rows={3}
+                        required
+                      />
+                    </label>
+                  )}
+
                   <label className="campo-formulario campo-observaciones">
                     <span>Observaciones</span>
 
@@ -525,16 +641,6 @@ function UnidadesPage() {
                 </>
               )}
             </div>
-
-            <div className="detalle-extra">
-              <span>Observaciones</span>
-
-              <p>
-                {unidadSeleccionada.observaciones ||
-                  'Sin observaciones registradas.'}
-              </p>
-            </div>
-
           </div>
         </div>
       )}

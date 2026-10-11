@@ -1,10 +1,18 @@
 import { NavLink } from 'react-router-dom'
+import logo from "../assets/ccentro_logo.png"
+
 
 function Sidebar() {
   return (
     <aside className="sidebar">
 
-      <div className="sidebar-logo">
+      <div className="sidebar-brand">
+        <img
+          src={logo}
+          alt="Cruz del Centro"
+          className="sidebar-brand-logo"
+        />
+
         <h2>Cruz del Centro</h2>
         <span>Almacén y Mantenimiento</span>
       </div>

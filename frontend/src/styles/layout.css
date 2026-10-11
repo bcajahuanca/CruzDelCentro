@@ -14,17 +14,35 @@
   padding: 20px;
 }
 
-.sidebar-logo {
-  margin-bottom: 35px;
+.sidebar-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
-.sidebar-logo h2 {
-  font-size: 20px;
-  margin-bottom: 5px;
+.sidebar-brand-logo {
+  width: 140px;
+  height: auto;
+  object-fit: contain;
+
+  background-color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+
+  margin-bottom: 12px;
 }
 
-.sidebar-logo span {
-  font-size: 12px;
+.sidebar-brand h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sidebar-brand span {
+  margin-top: 4px;
+  font-size: 11px;
   color: #bfc5ce;
 }
 

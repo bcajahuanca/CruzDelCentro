@@ -1,0 +1,547 @@
+.incidencias-page {
+  width: 100%;
+  animation: incidenciasEntrada 0.4s ease;
+}
+
+/* HEADER */
+
+.incidencias-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.incidencias-header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.incidencias-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+/* BOTÓN REGISTRAR */
+
+.btn-registrar-incidencia {
+  background: #d71920;
+  color: white;
+
+  border: none;
+  border-radius: 8px;
+
+  padding: 11px 18px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.btn-registrar-incidencia:hover {
+  background: #b9151b;
+  transform: translateY(-1px);
+}
+
+/* FILTROS */
+
+.incidencias-filtros-estado {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-bottom: 20px;
+}
+
+.incidencias-filtros-estado button {
+  padding: 9px 16px;
+
+  background: white;
+
+  border: 1px solid #dbe3ed;
+  border-radius: 8px;
+
+  color: #475569;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.incidencias-filtros-estado button:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Azul inspirado en el logo */
+
+.incidencias-filtros-estado button.activo {
+  background: #15558d;
+  border-color: #15558d;
+  color: white;
+}
+
+/* TABLA */
+
+.incidencias-tabla-wrapper {
+  width: 100%;
+
+  background: white;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  overflow-x: auto;
+}
+
+.incidencias-tabla {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 14px;
+  text-align: left;
+}
+
+/* En vez del encabezado azul fuerte del mockup,
+   usamos el mismo estilo limpio de tus otras páginas */
+
+.incidencias-tabla th {
+  padding: 16px;
+
+  background: #f8fafc;
+
+  color: #475569;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.incidencias-tabla td {
+  padding: 16px;
+
+  border-top: 1px solid #f1f5f9;
+
+  color: #334155;
+}
+
+.incidencias-tabla tbody tr {
+  transition: background 0.2s ease;
+}
+
+.incidencias-tabla tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* FOLIO */
+
+.incidencias-folio {
+  color: #15558d;
+  font-weight: 700;
+}
+
+/* BADGES */
+
+.incidencias-badge {
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+/* PRIORIDAD */
+
+.incidencias-badge.critico {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.incidencias-badge.alta {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.incidencias-badge.media {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.incidencias-badge.baja {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* ESTADO */
+
+.incidencias-badge.pendiente {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.incidencias-badge.en_proceso {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.incidencias-badge.resuelto {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.incidencias-badge.cerrado {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* BOTÓN VER */
+
+.btn-ver-incidencia {
+  padding: 7px 13px;
+
+  background: white;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+
+  color: #334155;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.btn-ver-incidencia:hover {
+  border-color: #15558d;
+  color: #15558d;
+  background: #f8fafc;
+}
+
+/* SIN REGISTROS */
+
+.incidencias-vacio {
+  padding: 30px;
+
+  text-align: center;
+
+  color: #64748b;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+  .incidencias-header {
+    flex-direction: column;
+  }
+
+  .btn-registrar-incidencia {
+    width: 100%;
+  }
+
+  .incidencias-filtros-estado {
+    gap: 8px;
+  }
+}
+
+/* ANIMACIÓN */
+
+@keyframes incidenciasEntrada {
+
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .incidencias-page {
+    animation: none;
+  }
+}
+
+.incidencias-filtros {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.incidencias-filtros input,
+.incidencias-filtros select {
+  padding: 11px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+}
+
+.incidencias-filtros input {
+  flex: 1;
+  min-width: 0;
+}
+
+.incidencias-resultados {
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.incidencias-error {
+  color: #dc2626;
+}
+
+.incidencias-paginacion {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.incidencias-paginacion button {
+  padding: 9px 14px;
+  border: 1px solid #dbe3ed;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.incidencias-paginacion .pagina-activa {
+  background: #15558d;
+  color: white;
+  border-color: #15558d;
+}
+
+.incidencias-paginacion button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.incidencia-modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 24px;
+
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.incidencia-modal {
+  width: 100%;
+  max-width: 720px;
+
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background: white;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.18);
+}
+
+.incidencia-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  padding: 24px;
+
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.incidencia-modal-header h2 {
+  margin: 0 0 5px;
+
+  font-size: 21px;
+
+  color: #1e293b;
+}
+
+.incidencia-modal-header p {
+  margin: 0;
+
+  font-size: 14px;
+
+  color: #64748b;
+}
+
+.incidencia-modal-cerrar {
+  border: none;
+  background: transparent;
+
+  font-size: 28px;
+
+  color: #64748b;
+
+  cursor: pointer;
+}
+
+.incidencia-form {
+  padding: 24px;
+}
+
+.incidencia-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+.incidencia-campo {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.incidencia-campo-completo {
+  grid-column: 1 / -1;
+}
+
+.incidencia-campo label {
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #475569;
+}
+
+.incidencia-campo input,
+.incidencia-campo select,
+.incidencia-campo textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 11px 13px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+
+  background: white;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  color: #334155;
+}
+
+.incidencia-campo input:focus,
+.incidencia-campo select:focus,
+.incidencia-campo textarea:focus {
+  outline: none;
+
+  border-color: #15558d;
+
+  box-shadow:
+    0 0 0 3px rgba(21, 85, 141, 0.1);
+}
+
+.incidencia-campo textarea {
+  resize: vertical;
+}
+
+.incidencia-form-error {
+  margin: 18px 0 0;
+
+  padding: 10px 12px;
+
+  background: #fef2f2;
+
+  border-radius: 7px;
+
+  color: #b91c1c;
+
+  font-size: 13px;
+}
+
+.incidencia-form-acciones {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 24px;
+}
+
+.btn-cancelar-incidencia,
+.btn-guardar-incidencia {
+  padding: 10px 17px;
+
+  border-radius: 8px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.btn-cancelar-incidencia {
+  background: white;
+
+  border: 1px solid #cbd5e1;
+
+  color: #475569;
+}
+
+.btn-guardar-incidencia {
+  border: none;
+
+  background: #d71920;
+
+  color: white;
+}
+
+.btn-guardar-incidencia:hover {
+  background: #b9151b;
+}
+
+.btn-guardar-incidencia:disabled,
+.btn-cancelar-incidencia:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+
+  .incidencia-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .incidencia-campo-completo {
+    grid-column: auto;
+  }
+
+}
