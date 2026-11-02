@@ -3,6 +3,7 @@ package com.cruzdelcentro.backend.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,11 +29,13 @@ public class MantenimientoController {
         this.mantenimientoService = mantenimientoService;
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.leer')")
     @GetMapping
     public List<MantenimientoResponse> listar() {
         return mantenimientoService.listarMantenimientos();
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public MantenimientoResponse crear(
@@ -43,6 +46,7 @@ public class MantenimientoController {
             .crearMantenimiento(request);
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.leer')")
     @GetMapping("/{id}")
     public MantenimientoResponse obtenerPorId(
         @PathVariable Long id
@@ -51,6 +55,7 @@ public class MantenimientoController {
             .obtenerMantenimientoPorId(id);
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @PutMapping("/{id}/reprogramar")
     public MantenimientoResponse reprogramar(
         @PathVariable Long id,
@@ -64,6 +69,7 @@ public class MantenimientoController {
             );
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @PutMapping("/{id}/cancelar")
     public MantenimientoResponse cancelar(
         @PathVariable Long id,
@@ -77,6 +83,7 @@ public class MantenimientoController {
             );
     }
     
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @PutMapping("/{id}/iniciar")
     public MantenimientoResponse iniciar(
         @PathVariable Long id
@@ -85,6 +92,7 @@ public class MantenimientoController {
             .iniciarMantenimiento(id);
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @PutMapping("/{id}/completar")
     public MantenimientoResponse completar(
         @PathVariable Long id

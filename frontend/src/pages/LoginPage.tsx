@@ -3,11 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import '../styles/logint.css'
 import { login } from '../services/authService'
 import logo from '../assets/ccentro_logo.png'
+import {
+  useAuth
+} from '../context/AuthContext'
 function LoginPage() {
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
   const [mensaje, setMensaje] = useState('')
   const navigate = useNavigate()
+
+  const {
+    actualizarDesdeToken
+  } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,7 +27,9 @@ function LoginPage() {
     try {
       const data = await login({ correo, password })
 
-      localStorage.setItem('token', data.token)
+      actualizarDesdeToken(
+        data.token
+      )
       localStorage.setItem('usuario', data.usuario)
       localStorage.setItem('rol', data.rol)
 

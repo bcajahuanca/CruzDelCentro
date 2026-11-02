@@ -6,6 +6,10 @@ import {
 
 import { useNavigate } from 'react-router-dom'
 
+import {
+  useAuth
+} from '../context/AuthContext'
+
 import type {
   Mantenimiento
 } from '../types/Mantenimiento'
@@ -43,6 +47,10 @@ import '../styles/mantenimiento.css'
 function MantenimientoPage() {
 
   const navigate = useNavigate()
+
+  const {
+    tienePermiso
+  } = useAuth()
 
   const [mostrarFormulario, setMostrarFormulario] =
     useState(false)
@@ -858,79 +866,98 @@ function MantenimientoPage() {
 
           </div>
 
-
           <div className="mantenimiento-header-acciones">
 
-            <button
-              type="button"
-              className="btn-plan-mantenimiento"
-              onClick={() => {
-
-                setErrorPlan('')
-                setMostrarPlanFormulario(true)
-
-              }}
-            >
-              + Crear plan preventivo
-            </button>
-
-            <div className="mantenimiento-selector-vista">
-
-              <button
-                type="button"
-                className={
-                  vista === 'LISTA'
-                    ? 'activo'
-                    : ''
-                }
-                onClick={() =>
-                  setVista('LISTA')
-                }
-              >
-                Lista
-              </button>
-
-              <button
-                type="button"
-                className={
-                  vista === 'CALENDARIO'
-                    ? 'activo'
-                    : ''
-                }
-                onClick={() =>
-                  setVista('CALENDARIO')
-                }
-              >
-                Calendario
-              </button>
-
-            </div>
+          <div className="mantenimiento-selector-vista">
 
             <button
               type="button"
-              className="btn-asignar-plan"
-              onClick={() => {
-
-                setErrorAsignacion('')
-
-                setMostrarAsignarPlan(true)
-
-              }}
+              className={
+                vista === 'LISTA'
+                  ? 'activo'
+                  : ''
+              }
+              onClick={() =>
+                setVista('LISTA')
+              }
             >
-              Asignar plan a unidad
+              Lista
             </button>
+
 
             <button
               type="button"
-              className="btn-programar-mantenimiento"
-              onClick={() => {
-                setErrorFormulario('')
-                setMostrarFormulario(true)
-              }}
+              className={
+                vista === 'CALENDARIO'
+                  ? 'activo'
+                  : ''
+              }
+              onClick={() =>
+                setVista('CALENDARIO')
+              }
             >
-              + Programar mantenimiento
+              Calendario
             </button>
+
           </div>
+
+
+          {tienePermiso(
+            'mantenimiento.planificar'
+          ) && (
+
+            <>
+              <button
+                type="button"
+                className="btn-plan-mantenimiento"
+                onClick={() => {
+
+                  setErrorPlan('')
+
+                  setMostrarPlanFormulario(
+                    true
+                  )
+                }}
+              >
+                + Crear plan preventivo
+              </button>
+
+
+              <button
+                type="button"
+                className="btn-asignar-plan"
+                onClick={() => {
+
+                  setErrorAsignacion('')
+
+                  setMostrarAsignarPlan(
+                    true
+                  )
+                }}
+              >
+                Asignar plan a unidad
+              </button>
+
+
+              <button
+                type="button"
+                className="btn-programar-mantenimiento"
+                onClick={() => {
+
+                  setErrorFormulario('')
+
+                  setMostrarFormulario(
+                    true
+                  )
+                }}
+              >
+                + Programar mantenimiento
+              </button>
+            </>
+
+          )}
+
+        </div>
 
         </div>
 
@@ -1341,7 +1368,8 @@ function MantenimientoPage() {
 
         )}
 
-        {mostrarFormulario && (
+        {mostrarFormulario && 
+          tienePermiso('mantenimiento.planificar') && (
 
           <div className="mantenimiento-modal-fondo">
 
@@ -1651,7 +1679,8 @@ function MantenimientoPage() {
 
         )}
 
-        {mostrarPlanFormulario && (
+        {mostrarPlanFormulario && 
+          tienePermiso('mantenimiento.planificar') && (
 
           <div className="mantenimiento-modal-fondo">
 
@@ -2064,7 +2093,8 @@ function MantenimientoPage() {
 
         )}
 
-        {mostrarAsignarPlan && (
+        {mostrarAsignarPlan && 
+          tienePermiso('mantenimiento.planificar') && (
 
           <div className="mantenimiento-modal-fondo">
 

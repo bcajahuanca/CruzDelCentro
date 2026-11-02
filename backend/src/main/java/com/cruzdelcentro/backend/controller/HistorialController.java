@@ -3,6 +3,7 @@ package com.cruzdelcentro.backend.controller;
 import com.cruzdelcentro.backend.service.HistorialService;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,6 +20,7 @@ public class HistorialController {
         this.historialService = historialService;
     }
 
+    @PreAuthorize("hasAuthority('historial.leer')")
     @GetMapping("/estados")
     public Map<String, Object> listarEstados(
         @RequestParam(defaultValue = "0") int page,

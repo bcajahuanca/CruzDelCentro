@@ -7,6 +7,8 @@ import { listarUnidades } from '../services/unidadService'
 
 import { useNavigate } from 'react-router-dom'
 
+import { useAuth } from '../context/AuthContext'
+
 import {
   crearIncidencia
 } from '../services/incidenciaService'
@@ -21,6 +23,10 @@ import type { Unidad } from '../types/Unidad'
 import '../styles/incidencias.css'
 
 function IncidenciasPage() {
+
+  const {
+    tienePermiso
+  } = useAuth()
 
   const [incidencias, setIncidencias] = useState<Incidencia[]>([])
 
@@ -365,16 +371,20 @@ function IncidenciasPage() {
           </div>
 
 
-          <button
-            type="button"
-            className="btn-registrar-incidencia"
-            onClick={() => {
-              setErrorFormulario('')
-              setMostrarFormulario(true)
-            }}
-          >
-            + Registrar incidencia
-          </button>
+          {tienePermiso('incidencia.crear') && (
+
+            <button
+              type="button"
+              className="btn-registrar-incidencia"
+              onClick={() => {
+                setErrorFormulario('')
+                setMostrarFormulario(true)
+              }}
+            >
+              + Registrar incidencia
+            </button>
+
+          )}
 
         </div>
 
@@ -858,7 +868,8 @@ function IncidenciasPage() {
 
       </div>
 
-      {mostrarFormulario && (
+      {mostrarFormulario && 
+        tienePermiso('incidencia.crear') && (
 
         <div className="incidencia-modal-fondo">
 

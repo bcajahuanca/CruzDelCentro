@@ -1,6 +1,8 @@
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 
+import { useAuth } from '../context/AuthContext'
+
 import { useEffect, useMemo, useState } from 'react'
 import type { Unidad } from '../types/Unidad'
 import type { UnidadDetalle } from '../types/UnidadDetalle'
@@ -13,6 +15,11 @@ import {
 } from '../services/unidadService'
 
 function UnidadesPage() {
+
+  const {
+    tienePermiso
+  } = useAuth()
+
   const [unidades, setUnidades] = useState<Unidad[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
@@ -232,9 +239,11 @@ function UnidadesPage() {
           <p>Consulta y administra las unidades registradas en la flota.</p>
         </div>
 
-        <button className="btn-nueva-unidad">
-          + Nueva unidad
-        </button>
+        {tienePermiso('unidad.editar') && (
+          <button className="btn-nueva-unidad">
+            + Nueva unidad
+          </button>
+        )}
       </div>
 
       <div className="unidades-resumen">
@@ -407,24 +416,35 @@ function UnidadesPage() {
               </div>
 
               <div className="modal-acciones">
-                <button
-                  className="btn-editar"
-                  onClick={() => setModoEdicion(true)}
-                >
-                  Editar
-                </button>
+
+                {tienePermiso('unidad.editar') && (
+
+                  <button
+                    className="btn-editar"
+                    onClick={() =>
+                      setModoEdicion(true)
+                    }
+                  >
+                    Editar
+                  </button>
+
+                )}
 
                 <button
                   className="modal-cerrar"
-                  onClick={() => setUnidadSeleccionada(null)}
+                  onClick={() =>
+                    setUnidadSeleccionada(null)
+                  }
                 >
                   ×
                 </button>
+
               </div>
             </div>
 
             <div className="detalle-grid">
-              {modoEdicion ? (
+              {modoEdicion &&
+                tienePermiso('unidad.editar') ? (
                 <div className="form-edicion">
 
                   <div className="form-edicion-header">

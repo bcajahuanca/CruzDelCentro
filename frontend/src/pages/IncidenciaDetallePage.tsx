@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { Incidencia } from '../types/Incidencias'
 import { obtenerIncidencia } from '../services/incidenciaService'
 
+import { useAuth } from '../context/AuthContext'
+
 import '../styles/incidenciaDetalle.css'
 
 function IncidenciaDetallePage() {
@@ -11,6 +13,10 @@ function IncidenciaDetallePage() {
   const { id } = useParams()
 
   const navigate = useNavigate()
+
+  const {
+    tienePermiso
+  } = useAuth()
 
   const [incidencia, setIncidencia] =
     useState<Incidencia | null>(null)
@@ -395,12 +401,18 @@ function IncidenciaDetallePage() {
               Responsable
             </h2>
 
-            <button
-              type="button"
-              className="btn-secundario-incidencia"
-            >
-              Asignar responsable
-            </button>
+            {tienePermiso(
+              'incidencia.gestionar'
+            ) && (
+
+              <button
+                type="button"
+                className="btn-secundario-incidencia"
+              >
+                Asignar responsable
+              </button>
+
+            )}
 
           </div>
 
@@ -422,12 +434,18 @@ function IncidenciaDetallePage() {
               Seguimiento
             </h2>
 
-            <button
-              type="button"
-              className="btn-secundario-incidencia"
-            >
-              Cambiar estado
-            </button>
+            {tienePermiso(
+              'incidencia.gestionar'
+            ) && (
+
+              <button
+                type="button"
+                className="btn-secundario-incidencia"
+              >
+                Cambiar estado
+              </button>
+
+            )}
 
           </div>
 
@@ -449,12 +467,18 @@ function IncidenciaDetallePage() {
               Evidencias
             </h2>
 
-            <button
-              type="button"
-              className="btn-secundario-incidencia"
-            >
-              + Adjuntar evidencia
-            </button>
+            {tienePermiso(
+              'incidencia.gestionar'
+            ) && (
+
+              <button
+                type="button"
+                className="btn-secundario-incidencia"
+              >
+                + Adjuntar evidencia
+              </button>
+
+            )}
 
           </div>
 
@@ -467,30 +491,36 @@ function IncidenciaDetallePage() {
 
         {/* ACCIONES */}
 
-        <div className="incidencia-detalle-acciones">
+        {tienePermiso(
+          'incidencia.gestionar'
+        ) && (
 
-          <button
-            type="button"
-            className="btn-resolver-incidencia"
-          >
-            Resolver incidencia
-          </button>
+          <div className="incidencia-detalle-acciones">
 
-          <button
-            type="button"
-            className="btn-cerrar-incidencia"
-          >
-            Cerrar incidencia
-          </button>
+            <button
+              type="button"
+              className="btn-resolver-incidencia"
+            >
+              Resolver incidencia
+            </button>
 
-          <button
-            type="button"
-            className="btn-anular-incidencia"
-          >
-            Anular
-          </button>
+            <button
+              type="button"
+              className="btn-cerrar-incidencia"
+            >
+              Cerrar incidencia
+            </button>
 
-        </div>
+            <button
+              type="button"
+              className="btn-anular-incidencia"
+            >
+              Anular
+            </button>
+
+          </div>
+
+        )}
 
       </div>
 

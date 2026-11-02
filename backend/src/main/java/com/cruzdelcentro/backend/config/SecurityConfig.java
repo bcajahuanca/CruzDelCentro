@@ -4,135 +4,162 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@EnableMethodSecurity 
+@EnableWebSecurity 
 @Configuration
 public class SecurityConfig {
 
-    /*
-     * CADENA 1
-     * Login y endpoint de prueba públicos.
-     */
-    @Bean
-    @Order(1)
-    public SecurityFilterChain publicSecurityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
+        /*
+         * CADENA 1
+         * Login y endpoint de prueba públicos.
+         */
+        @Bean
+        @Order(1)
+        public SecurityFilterChain publicSecurityFilterChain(
+                        HttpSecurity http) throws Exception {
 
-        http
-                .securityMatcher(
-                        "/api/auth/**",
-                        "/api/test"
-                )
+                http
+                                .securityMatcher(
+                                                "/api/auth/**",
+                                                "/api/test")
 
-                .csrf(csrf -> csrf.disable())
+                                .csrf(csrf -> csrf.disable())
 
-                .cors(cors ->
-                        cors.configurationSource(corsConfigurationSource())
-                )
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
-                .authorizeHttpRequests(auth ->
-                        auth.anyRequest().permitAll()
-                );
+                                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
-        return http.build();
-    }
+                return http.build();
+        }
 
+        /*
+         * CADENA 2
+         * Todo lo demás requiere JWT.
+         */
+        @Bean
+        @Order(2)
+        public SecurityFilterChain apiSecurityFilterChain(
+                        HttpSecurity http) throws Exception {
 
-    /*
-     * CADENA 2
-     * Todo lo demás requiere JWT.
-     */
-    @Bean
-    @Order(2)
-    public SecurityFilterChain apiSecurityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
 
-        http
-                .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                .cors(cors ->
-                        cors.configurationSource(corsConfigurationSource())
-                )
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
+                                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
 
-                .authorizeHttpRequests(auth ->
-                        auth.anyRequest().authenticated()
-                )
+                                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
-                .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(Customizer.withDefaults())
-                );
+                return http.build();
+        }
 
-        return http.build();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+                CorsConfiguration configuration = new CorsConfiguration();
 
+                configuration.setAllowedOrigins(
+                                List.of(
+                                                "http://localhost:5173",
+                                                "https://cruzdelcentro.up.railway.app"));
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+                configuration.setAllowedMethods(
+                                List.of(
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "PATCH",
+                                                "DELETE",
+                                                "OPTIONS"));
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+                configuration.setAllowedHeaders(
+                                List.of("*"));
 
-        configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:5173",
-                        "https://cruzdelcentro.up.railway.app"
-                )
-        );
+                configuration.setAllowCredentials(true);
 
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "PATCH",
-                        "DELETE",
-                        "OPTIONS"
-                )
-        );
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-        configuration.setAllowedHeaders(
-                List.of("*")
-        );
+                source.registerCorsConfiguration(
+                                "/**",
+                                configuration);
 
-        configuration.setAllowCredentials(true);
+                return source;
+        }
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        @Bean
+        public JwtAuthenticationConverter jwtAuthenticationConverter() {
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+                JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
-        return source;
-    }
+                converter.setJwtGrantedAuthoritiesConverter(
+                        jwt -> {
+
+                                List<GrantedAuthority> authorities = new ArrayList<>();
+
+                                /*
+                                        * PERMISOS
+                                        */
+
+                                List<String> permisos = jwt.getClaimAsStringList(
+                                                "permisos");
+
+                                if (permisos != null) {
+
+                                        permisos.forEach(
+                                                        permiso -> authorities.add(
+                                                                        new SimpleGrantedAuthority(
+                                                                                        permiso)));
+                                }
+
+                                /*
+                                        * ROLES
+                                        *
+                                        * Spring espera ROLE_
+                                        * para hasRole(...)
+                                        */
+
+                                List<String> roles = jwt.getClaimAsStringList(
+                                                "roles");
+
+                                if (roles != null) {
+
+                                        roles.forEach(
+                                                        rol -> authorities.add(
+                                                                        new SimpleGrantedAuthority(
+                                                                                        "ROLE_" + rol)));
+                                }
+
+                                return authorities;
+                        });
+
+                return converter;
+        }
 }

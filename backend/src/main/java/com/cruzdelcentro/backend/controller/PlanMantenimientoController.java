@@ -9,6 +9,7 @@ import com.cruzdelcentro.backend.dto.PlanUnidadResponse;
 // import com.cruzdelcentro.backend.service.PlanUnidadService;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class PlanMantenimientoController {
             planUnidadService;
     }
 
-
+    @PreAuthorize("hasAuthority('mantenimiento.leer')")
     @GetMapping
     public List<PlanMantenimientoResponse>
         listar() {
@@ -43,7 +44,7 @@ public class PlanMantenimientoController {
             .listarPlanes();
     }
 
-
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PlanMantenimientoResponse crear(
@@ -55,6 +56,7 @@ public class PlanMantenimientoController {
             .crearPlan(request);
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @GetMapping("/asignaciones")
     public List<PlanUnidadResponse>
         listarAsignaciones() {
@@ -63,6 +65,7 @@ public class PlanMantenimientoController {
             .listarAsignaciones();
     }
 
+    @PreAuthorize("hasAuthority('mantenimiento.planificar')")
     @PostMapping("/asignaciones")
     @ResponseStatus(HttpStatus.CREATED)
     public PlanUnidadResponse asignarPlan(

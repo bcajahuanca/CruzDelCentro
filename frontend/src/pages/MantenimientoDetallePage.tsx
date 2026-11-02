@@ -12,6 +12,8 @@ import type {
   Mantenimiento
 } from '../types/Mantenimiento'
 
+import { useAuth } from '../context/AuthContext'
+
 import {
   obtenerMantenimiento,
   reprogramarMantenimiento,
@@ -24,6 +26,10 @@ import '../styles/mantenimientoDetalle.css'
 
 
 function MantenimientoDetallePage() {
+
+  const {
+    tienePermiso
+  } = useAuth()
 
   const { id } = useParams()
 
@@ -644,73 +650,87 @@ function MantenimientoDetallePage() {
 
         {/* ACCIONES */}
 
-        <div className="detalle-acciones">
+        {tienePermiso('mantenimiento.planificar') && (
 
-          {mantenimiento.estado === 'PROGRAMADA' && (
+          <div className="detalle-acciones">
 
-            <button
-              type="button"
-              className="btn-iniciar-mantenimiento"
-              onClick={iniciar}
-              disabled={guardando}
-            >
-              Iniciar mantenimiento
-            </button>
+            {mantenimiento.estado === 'PROGRAMADA' && (
 
-          )}
+              <button
+                type="button"
+                className="btn-iniciar-mantenimiento"
+                onClick={iniciar}
+                disabled={guardando}
+              >
+                Iniciar mantenimiento
+              </button>
 
-          {mantenimiento.estado === 'EN_EJECUCION' && (
+            )}
 
-            <button
-              type="button"
-              className="btn-completar-mantenimiento"
-              onClick={completar}
-              disabled={guardando}
-            >
-              Completar mantenimiento
-            </button>
+            {mantenimiento.estado === 'EN_EJECUCION' && (
 
-          )}
+              <button
+                type="button"
+                className="btn-completar-mantenimiento"
+                onClick={completar}
+                disabled={guardando}
+              >
+                Completar mantenimiento
+              </button>
 
-          <button
-            type="button"
-            className="btn-reprogramar"
-            onClick={() => {
+            )}
 
-              setErrorAccion('')
+            {mantenimiento.estado === 'PROGRAMADA' && (
 
-              setReprogramacion({
-                fechaVencimiento:
-                  mantenimiento.fechaVencimiento || '',
+              <>
+                <button
+                  type="button"
+                  className="btn-reprogramar"
+                  onClick={() => {
 
-                kilometrajeObjetivo:
-                  mantenimiento.kilometrajeObjetivo
-                    ?.toString() || '',
+                    setErrorAccion('')
 
-                motivo: ''
-              })
+                    setReprogramacion({
+                      fechaVencimiento:
+                        mantenimiento.fechaVencimiento || '',
 
-              setMostrarReprogramar(true)
-            }}
-          >
-            Reprogramar
-          </button>
+                      kilometrajeObjetivo:
+                        mantenimiento.kilometrajeObjetivo
+                          ?.toString() || '',
 
-          <button
-            type="button"
-            className="btn-cancelar-programacion"
-            onClick={() => {
-              setErrorAccion('')
-              setMotivoCancelacion('')
-              setMostrarCancelar(true)
-            }}
-          >
-            Cancelar mantenimiento
-          </button>
+                      motivo: ''
+                    })
 
-        </div>
+                    setMostrarReprogramar(true)
+                  }}
+                >
+                  Reprogramar
+                </button>
 
-        {mostrarReprogramar && (
+
+                <button
+                  type="button"
+                  className="btn-cancelar-programacion"
+                  onClick={() => {
+
+                    setErrorAccion('')
+                    setMotivoCancelacion('')
+
+                    setMostrarCancelar(true)
+                  }}
+                >
+                  Cancelar mantenimiento
+                </button>
+              </>
+
+            )}
+
+          </div>
+
+        )}
+
+        {mostrarReprogramar && 
+          tienePermiso('mantenimiento.planificar') && (
 
           <div className="mantenimiento-modal-fondo">
 
@@ -863,7 +883,8 @@ function MantenimientoDetallePage() {
 
         )}
 
-        {mostrarCancelar && (
+        {mostrarCancelar && 
+          tienePermiso('mantenimiento.planificar') && (
 
           <div className="mantenimiento-modal-fondo">
 

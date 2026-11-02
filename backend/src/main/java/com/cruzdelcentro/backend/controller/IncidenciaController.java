@@ -11,6 +11,7 @@ import com.cruzdelcentro.backend.dto.IncidenciaResponse;
 
 // import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class IncidenciaController {
         this.incidenciaService = incidenciaService;
     }
 
+    @PreAuthorize("hasAuthority('incidencia.leer')")
     @GetMapping
     public Map<String, Object> listarIncidencias(
         @RequestParam(defaultValue = "0") int page,
@@ -80,6 +82,7 @@ public class IncidenciaController {
         );
     }
 
+    @PreAuthorize("hasAuthority('incidencia.crear')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public IncidenciaResponse crearIncidencia(
@@ -98,6 +101,7 @@ public class IncidenciaController {
         );
     }
 
+    @PreAuthorize("hasAuthority('incidencia.leer')")
     @GetMapping("/{id}")
     public IncidenciaResponse obtenerIncidencia(
         @PathVariable Long id

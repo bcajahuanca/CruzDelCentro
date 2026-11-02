@@ -4,6 +4,8 @@ import com.cruzdelcentro.backend.dto.UnidadDetalleResponse;
 import com.cruzdelcentro.backend.dto.UnidadResponse;
 import com.cruzdelcentro.backend.service.UnidadService;
 import com.cruzdelcentro.backend.dto.UnidadUpdateRequest;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -22,16 +24,19 @@ public class UnidadController {
         this.unidadService = unidadService;
     }
 
+    @PreAuthorize("hasAuthority('unidad.leer')")
     @GetMapping
     public List<UnidadResponse> listar() {
         return unidadService.listarUnidades();
     }
 
+    @PreAuthorize("hasAuthority('unidad.leer')")
     @GetMapping("/{id}")
     public UnidadDetalleResponse obtenerPorId(@PathVariable Long id) {
         return unidadService.obtenerPorId(id);
     }
-    
+
+    @PreAuthorize("hasAuthority('unidad.editar')")
     @PutMapping("/{id}")
     public UnidadDetalleResponse actualizar(
         @PathVariable Long id,

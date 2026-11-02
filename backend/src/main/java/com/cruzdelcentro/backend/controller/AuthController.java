@@ -3,6 +3,7 @@ package com.cruzdelcentro.backend.controller;
 import com.cruzdelcentro.backend.model.Rol;
 import com.cruzdelcentro.backend.model.Usuario;
 import com.cruzdelcentro.backend.repository.UsuarioRepository;
+import com.cruzdelcentro.backend.service.AutorizacionService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,9 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,6 +27,7 @@ public class AuthController {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
+    private final AutorizacionService autorizacionService;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
@@ -33,11 +35,13 @@ public class AuthController {
     public AuthController(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
-            JwtEncoder jwtEncoder
+            JwtEncoder jwtEncoder,
+            AutorizacionService autorizacionService
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
+        this.autorizacionService = autorizacionService;
     }
 
     @RestController 
@@ -83,6 +87,16 @@ public class AuthController {
 
         Usuario usuario = usuarioOptional.get();
 
+        List<String> roles =
+                autorizacionService.obtenerRoles(
+                        usuario.getId()
+                );
+
+        List<String> permisos =
+                autorizacionService.obtenerPermisos(
+                        usuario.getId()
+                );
+
         if (!usuario.isActivo()) {
             return ResponseEntity.status(403)
                     .body(Map.of(
@@ -95,18 +109,15 @@ public class AuthController {
                 password,
                 usuario.getPasswordHash()
         )) {
+        System.out.println(
+                passwordEncoder.encode("123456")
+        );
             return ResponseEntity.status(401)
                     .body(Map.of(
                             "mensaje",
                             "Credenciales incorrectas"
                     ));
         }
-
-        String rol = usuario.getRoles()
-                .stream()
-                .map(Rol::getCodigo)
-                .findFirst()
-                .orElse("SIN_ROL");
 
         Instant ahora = Instant.now();
 
@@ -121,10 +132,8 @@ public class AuthController {
                         "nombre",
                         usuario.getNombreCompleto()
                 )
-                .claim(
-                        "rol",
-                        rol
-                )
+                .claim("roles", roles)
+                .claim("permisos", permisos)
                 .build();
 
         JwsHeader jwsHeader = JwsHeader
@@ -152,7 +161,7 @@ public class AuthController {
                         usuario.getCorreo(),
 
                         "rol",
-                        rol,
+                        roles,
 
                         "token",
                         token
