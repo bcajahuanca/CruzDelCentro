@@ -315,6 +315,7 @@ function UnidadesPage() {
               <th>Tipo</th>
               <th>Año</th>
               <th>Estado</th>
+              <th>Kilometraje</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -355,6 +356,12 @@ function UnidadesPage() {
                   >
                     {unidad.estado.replaceAll('_', ' ')}
                   </span>
+                </td>
+
+                <td className="unidad-kilometraje">
+                  {unidad.kilometrajeActual !== null
+                    ? `${unidad.kilometrajeActual.toLocaleString('es-PE')} km`
+                    : 'Sin lectura'}
                 </td>
 
                 <td>

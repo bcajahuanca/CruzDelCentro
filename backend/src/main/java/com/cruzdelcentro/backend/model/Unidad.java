@@ -2,12 +2,26 @@ package com.cruzdelcentro.backend.model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import org.hibernate.annotations.Formula;
 
 @Entity
 @Table(name = "unidad")
 public class Unidad {
+
+    @Formula("""
+        (
+            SELECT lk.kilometraje
+            FROM lectura_kilometraje lk
+            WHERE lk.unidad_id = id
+            ORDER BY lk.fecha_lectura DESC
+            LIMIT 1
+        )
+        """)
+    private BigDecimal kilometrajeActual;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -97,6 +111,10 @@ public class Unidad {
 
     public EstadoUnidad getEstadoOperativo() {
         return estadoOperativo;
+    }
+
+    public BigDecimal getKilometrajeActual() {
+        return kilometrajeActual;
     }
 
     public boolean isActivo() {

@@ -582,3 +582,9 @@
 .btn-descargar:active {
   transform: translateY(0);
 }
+
+.unidad-kilometraje {
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}

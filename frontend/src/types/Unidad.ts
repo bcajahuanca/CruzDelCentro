@@ -7,4 +7,5 @@ export interface Unidad {
   tipoVehiculo: string
   anioFabricacion: number | null
   estado: string
+  kilometrajeActual: number | null
 }

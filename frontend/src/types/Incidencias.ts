@@ -19,3 +19,4 @@ export interface IncidenciasPaginadas {
   totalRegistros: number
   totalPaginas: number
 }
+

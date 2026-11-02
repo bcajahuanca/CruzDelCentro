@@ -42,10 +42,11 @@ public class UnidadService {
 
     public List<UnidadResponse> listarUnidades() {
 
-        return unidadRepository.findByActivoTrue()
-                .stream()
-                .map(this::convertir)
-                .toList();
+        return unidadRepository
+            .findByActivoTrueOrderByCodigoAsc()
+            .stream()
+            .map(this::convertir)
+            .toList();
     }
 
     private UnidadResponse convertir(Unidad unidad) {
@@ -58,7 +59,8 @@ public class UnidadService {
                 unidad.getModelo().getNombre(),
                 unidad.getTipoVehiculo(),
                 unidad.getAnioFabricacion(),
-                unidad.getEstadoOperativo().name()
+                unidad.getEstadoOperativo().name(),
+                unidad.getKilometrajeActual()
         );
     }
 

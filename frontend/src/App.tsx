@@ -18,6 +18,7 @@ import UsuariosPage from './pages/UsuariosPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import MainLayout from './layouts/MainLayout'
 import IncidenciaDetallePage from './pages/IncidenciaDetallePage'
+import MantenimientoDetallePage from './pages/MantenimientoDetallePage'
 
 function App() {
 
@@ -87,6 +88,13 @@ function App() {
           <Route
             path="/incidencias/:id"
             element={<IncidenciaDetallePage />}
+          />
+
+          <Route
+            path="/mantenimiento/:id"
+            element={
+              <MantenimientoDetallePage />
+            }
           />
 
         </Route>
