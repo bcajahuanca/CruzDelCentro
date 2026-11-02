@@ -8,6 +8,8 @@ export interface Mantenimiento {
   fechaVencimiento: string | null
   kilometrajeObjetivo: number | null
   kilometrajeActual: number | null
+  inicioProgramado: string | null
+  finProgramado: string | null
   responsableId: number
   responsable: string
   estado: string

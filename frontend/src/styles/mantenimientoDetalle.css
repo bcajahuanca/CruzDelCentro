@@ -196,3 +196,60 @@
   }
 
 }
+
+.mantenimiento-modal-pequeno {
+  max-width: 520px;
+}
+
+.btn-confirmar-cancelacion {
+  padding: 10px 17px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #d71920;
+
+  color: white;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.btn-confirmar-cancelacion:hover {
+  background: #b9151b;
+}
+
+.btn-confirmar-cancelacion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-iniciar-mantenimiento,
+.btn-completar-mantenimiento {
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.btn-iniciar-mantenimiento {
+  background: #15558d;
+  color: white;
+}
+
+.btn-completar-mantenimiento {
+  background: #15803d;
+  color: white;
+}
+
+.btn-iniciar-mantenimiento:disabled,
+.btn-completar-mantenimiento:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

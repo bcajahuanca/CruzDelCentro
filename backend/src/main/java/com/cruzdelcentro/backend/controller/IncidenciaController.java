@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.cruzdelcentro.backend.dto.IncidenciaCreateRequest;
 import com.cruzdelcentro.backend.dto.IncidenciaResponse;
 
-import org.springframework.http.HttpStatus;
+// import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 

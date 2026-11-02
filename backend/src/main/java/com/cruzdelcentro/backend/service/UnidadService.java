@@ -11,13 +11,13 @@ import com.cruzdelcentro.backend.model.EstadoUnidad;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
-import com.cruzdelcentro.backend.model.EstadoUnidad;
+// import com.cruzdelcentro.backend.model.EstadoUnidad;
 import com.cruzdelcentro.backend.model.Usuario;
 import com.cruzdelcentro.backend.repository.UsuarioRepository;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import org.springframework.transaction.annotation.Transactional;
+// import jakarta.persistence.EntityManager;
+// import jakarta.persistence.PersistenceContext;
+// import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.stereotype.Service;
 
@@ -207,20 +207,20 @@ public class UnidadService {
     }
 
 
-    private void configurarContextoHistorial(
-        Long usuarioId,
-        String motivo
-    ) {
-        entityManager.createNativeQuery(
-            "SELECT set_config('app.usuario_id', :usuarioId, true)"
-        )
-        .setParameter("usuarioId", usuarioId.toString())
-        .getSingleResult();
+    // private void configurarContextoHistorial(
+    //     Long usuarioId,
+    //     String motivo
+    // ) {
+    //     entityManager.createNativeQuery(
+    //         "SELECT set_config('app.usuario_id', :usuarioId, true)"
+    //     )
+    //     .setParameter("usuarioId", usuarioId.toString())
+    //     .getSingleResult();
 
-        entityManager.createNativeQuery(
-            "SELECT set_config('app.motivo', :motivo, true)"
-        )
-        .setParameter("motivo", motivo)
-        .getSingleResult();
-    }
+    //     entityManager.createNativeQuery(
+    //         "SELECT set_config('app.motivo', :motivo, true)"
+    //     )
+    //     .setParameter("motivo", motivo)
+    //     .getSingleResult();
+    // }
 }

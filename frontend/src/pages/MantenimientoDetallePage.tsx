@@ -13,7 +13,11 @@ import type {
 } from '../types/Mantenimiento'
 
 import {
-  obtenerMantenimiento
+  obtenerMantenimiento,
+  reprogramarMantenimiento,
+  cancelarMantenimiento,
+  iniciarMantenimiento,
+  completarMantenimiento
 } from '../services/mantemientoService'
 
 import '../styles/mantenimientoDetalle.css'
@@ -40,6 +44,40 @@ function MantenimientoDetallePage() {
   const [
     error,
     setError
+  ] = useState('')
+
+  const [
+    mostrarReprogramar,
+    setMostrarReprogramar
+  ] = useState(false)
+
+  const [
+    mostrarCancelar,
+    setMostrarCancelar
+  ] = useState(false)
+
+  const [
+    guardando,
+    setGuardando
+  ] = useState(false)
+
+  const [
+    errorAccion,
+    setErrorAccion
+  ] = useState('')
+
+  const [
+    reprogramacion,
+    setReprogramacion
+  ] = useState({
+    fechaVencimiento: '',
+    kilometrajeObjetivo: '',
+    motivo: ''
+  })
+
+  const [
+    motivoCancelacion,
+    setMotivoCancelacion
   ] = useState('')
 
 
@@ -110,6 +148,191 @@ function MantenimientoDetallePage() {
     )} km`
   }
 
+  const guardarReprogramacion = async (
+    e: React.FormEvent
+  ) => {
+
+    e.preventDefault()
+
+    if (!mantenimiento) {
+      return
+    }
+
+    if (
+      !reprogramacion.fechaVencimiento &&
+      !reprogramacion.kilometrajeObjetivo
+    ) {
+      setErrorAccion(
+        'Debe indicar una fecha o kilometraje objetivo'
+      )
+      return
+    }
+
+    if (!reprogramacion.motivo.trim()) {
+      setErrorAccion(
+        'Debe indicar el motivo de la reprogramación'
+      )
+      return
+    }
+
+    try {
+
+      setGuardando(true)
+      setErrorAccion('')
+
+      const actualizado =
+        await reprogramarMantenimiento(
+          mantenimiento.id,
+          {
+            fechaVencimiento:
+              reprogramacion.fechaVencimiento ||
+              null,
+
+            kilometrajeObjetivo:
+              reprogramacion.kilometrajeObjetivo
+                ? Number(
+                    reprogramacion.kilometrajeObjetivo
+                  )
+                : null,
+
+            motivo:
+              reprogramacion.motivo.trim()
+          }
+        )
+
+      setMantenimiento(actualizado)
+
+      setMostrarReprogramar(false)
+
+    } catch (error) {
+
+      setErrorAccion(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo reprogramar'
+      )
+
+    } finally {
+
+      setGuardando(false)
+
+    }
+  }
+
+  const confirmarCancelacion = async (
+    e: React.FormEvent
+  ) => {
+
+    e.preventDefault()
+
+    if (!mantenimiento) {
+      return
+    }
+
+    if (!motivoCancelacion.trim()) {
+
+      setErrorAccion(
+        'Debe indicar el motivo de cancelación'
+      )
+
+      return
+    }
+
+    try {
+
+      setGuardando(true)
+      setErrorAccion('')
+
+      const actualizado =
+        await cancelarMantenimiento(
+          mantenimiento.id,
+          motivoCancelacion.trim()
+        )
+
+      setMantenimiento(actualizado)
+
+      setMostrarCancelar(false)
+
+    } catch (error) {
+
+      setErrorAccion(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo cancelar'
+      )
+
+    } finally {
+
+      setGuardando(false)
+
+    }
+  }
+
+  const iniciar = async () => {
+
+    if (!mantenimiento) {
+      return
+    }
+
+    try {
+
+      setGuardando(true)
+      setErrorAccion('')
+
+      const actualizado =
+        await iniciarMantenimiento(
+          mantenimiento.id
+        )
+
+      setMantenimiento(actualizado)
+
+    } catch (error) {
+
+      setErrorAccion(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo iniciar'
+      )
+
+    } finally {
+
+      setGuardando(false)
+
+    }
+  }
+
+  const completar = async () => {
+
+    if (!mantenimiento) {
+      return
+    }
+
+    try {
+
+      setGuardando(true)
+      setErrorAccion('')
+
+      const actualizado =
+        await completarMantenimiento(
+          mantenimiento.id
+        )
+
+      setMantenimiento(actualizado)
+
+    } catch (error) {
+
+      setErrorAccion(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo completar'
+      )
+
+    } finally {
+
+      setGuardando(false)
+
+    }
+  }
 
   if (cargando) {
 
@@ -286,6 +509,56 @@ function MantenimientoDetallePage() {
 
             </div>
 
+            <div className="detalle-item">
+
+              <span>
+                Inicio programado
+              </span>
+
+              <strong>
+                {mantenimiento.inicioProgramado
+                  ? new Date(
+                      mantenimiento.inicioProgramado
+                    ).toLocaleString(
+                      'es-PE',
+                      {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }
+                    )
+                  : 'No definido'}
+              </strong>
+
+            </div>
+
+            <div className="detalle-item">
+
+              <span>
+                Fin programado
+              </span>
+
+              <strong>
+                {mantenimiento.finProgramado
+                  ? new Date(
+                      mantenimiento.finProgramado
+                    ).toLocaleString(
+                      'es-PE',
+                      {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }
+                    )
+                  : 'No definido'}
+              </strong>
+
+            </div>
+
           </div>
 
         </div>
@@ -373,9 +646,52 @@ function MantenimientoDetallePage() {
 
         <div className="detalle-acciones">
 
+          {mantenimiento.estado === 'PROGRAMADA' && (
+
+            <button
+              type="button"
+              className="btn-iniciar-mantenimiento"
+              onClick={iniciar}
+              disabled={guardando}
+            >
+              Iniciar mantenimiento
+            </button>
+
+          )}
+
+          {mantenimiento.estado === 'EN_EJECUCION' && (
+
+            <button
+              type="button"
+              className="btn-completar-mantenimiento"
+              onClick={completar}
+              disabled={guardando}
+            >
+              Completar mantenimiento
+            </button>
+
+          )}
+
           <button
             type="button"
             className="btn-reprogramar"
+            onClick={() => {
+
+              setErrorAccion('')
+
+              setReprogramacion({
+                fechaVencimiento:
+                  mantenimiento.fechaVencimiento || '',
+
+                kilometrajeObjetivo:
+                  mantenimiento.kilometrajeObjetivo
+                    ?.toString() || '',
+
+                motivo: ''
+              })
+
+              setMostrarReprogramar(true)
+            }}
           >
             Reprogramar
           </button>
@@ -383,12 +699,266 @@ function MantenimientoDetallePage() {
           <button
             type="button"
             className="btn-cancelar-programacion"
+            onClick={() => {
+              setErrorAccion('')
+              setMotivoCancelacion('')
+              setMostrarCancelar(true)
+            }}
           >
             Cancelar mantenimiento
           </button>
 
         </div>
 
+        {mostrarReprogramar && (
+
+          <div className="mantenimiento-modal-fondo">
+
+            <div className="mantenimiento-modal">
+
+              <div className="mantenimiento-modal-header">
+
+                <div>
+                  <h2>Reprogramar mantenimiento</h2>
+
+                  <p>
+                    Modifica las condiciones de
+                    vencimiento de la intervención.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="mantenimiento-modal-cerrar"
+                  onClick={() =>
+                    setMostrarReprogramar(false)
+                  }
+                >
+                  ×
+                </button>
+
+              </div>
+
+
+              <form
+                className="mantenimiento-form"
+                onSubmit={guardarReprogramacion}
+              >
+
+                <div className="mantenimiento-form-grid">
+
+                  <div className="mantenimiento-campo">
+
+                    <label>
+                      Nueva fecha de vencimiento
+                    </label>
+
+                    <input
+                      type="date"
+                      value={
+                        reprogramacion.fechaVencimiento
+                      }
+                      onChange={(e) =>
+                        setReprogramacion({
+                          ...reprogramacion,
+                          fechaVencimiento:
+                            e.target.value
+                        })
+                      }
+                    />
+
+                  </div>
+
+
+                  <div className="mantenimiento-campo">
+
+                    <label>
+                      Nuevo kilometraje objetivo
+                    </label>
+
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={
+                        reprogramacion.kilometrajeObjetivo
+                      }
+                      onChange={(e) =>
+                        setReprogramacion({
+                          ...reprogramacion,
+                          kilometrajeObjetivo:
+                            e.target.value
+                        })
+                      }
+                    />
+
+                  </div>
+
+
+                  <div
+                    className="
+                      mantenimiento-campo
+                      mantenimiento-campo-completo
+                    "
+                  >
+
+                    <label>
+                      Motivo de la reprogramación *
+                    </label>
+
+                    <textarea
+                      rows={4}
+                      value={reprogramacion.motivo}
+                      onChange={(e) =>
+                        setReprogramacion({
+                          ...reprogramacion,
+                          motivo:
+                            e.target.value
+                        })
+                      }
+                      placeholder="Explique por qué se modifica la programación..."
+                    />
+
+                  </div>
+
+                </div>
+
+
+                {errorAccion && (
+                  <p className="mantenimiento-form-error">
+                    {errorAccion}
+                  </p>
+                )}
+
+
+                <div className="mantenimiento-form-acciones">
+
+                  <button
+                    type="button"
+                    className="btn-cancelar-mantenimiento"
+                    onClick={() =>
+                      setMostrarReprogramar(false)
+                    }
+                  >
+                    Volver
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="btn-guardar-mantenimiento"
+                    disabled={guardando}
+                  >
+                    {guardando
+                      ? 'Guardando...'
+                      : 'Guardar reprogramación'}
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
+
+          </div>
+
+        )}
+
+        {mostrarCancelar && (
+
+          <div className="mantenimiento-modal-fondo">
+
+            <div className="mantenimiento-modal mantenimiento-modal-pequeno">
+
+              <div className="mantenimiento-modal-header">
+
+                <div>
+                  <h2>
+                    Cancelar mantenimiento
+                  </h2>
+
+                  <p>
+                    Esta acción conservará el registro
+                    para fines de trazabilidad.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="mantenimiento-modal-cerrar"
+                  onClick={() =>
+                    setMostrarCancelar(false)
+                  }
+                >
+                  ×
+                </button>
+
+              </div>
+
+
+              <form
+                className="mantenimiento-form"
+                onSubmit={confirmarCancelacion}
+              >
+
+                <div className="mantenimiento-campo">
+
+                  <label>
+                    Motivo de cancelación *
+                  </label>
+
+                  <textarea
+                    rows={4}
+                    value={motivoCancelacion}
+                    onChange={(e) =>
+                      setMotivoCancelacion(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Explique por qué se cancela este mantenimiento..."
+                  />
+
+                </div>
+
+
+                {errorAccion && (
+                  <p className="mantenimiento-form-error">
+                    {errorAccion}
+                  </p>
+                )}
+
+
+                <div className="mantenimiento-form-acciones">
+
+                  <button
+                    type="button"
+                    className="btn-cancelar-mantenimiento"
+                    onClick={() =>
+                      setMostrarCancelar(false)
+                    }
+                  >
+                    Volver
+                  </button>
+
+
+                  <button
+                    type="submit"
+                    className="btn-confirmar-cancelacion"
+                    disabled={guardando}
+                  >
+                    {guardando
+                      ? 'Cancelando...'
+                      : 'Confirmar cancelación'}
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
+
+          </div>
+
+        )}
 
       </div>
 

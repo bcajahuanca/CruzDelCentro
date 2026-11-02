@@ -34,6 +34,9 @@ import {
 import type { Unidad } from '../types/Unidad'
 import { listarUnidades } from '../services/unidadService'
 
+import CalendarioMantenimiento
+  from '../components/CalendarioMantenimiento'
+
 import '../styles/mantenimiento.css'
 
 
@@ -121,6 +124,13 @@ function MantenimientoPage() {
     anticipacionDias: '7',
     anticipacionKm: '500'
   })
+
+  const [
+    vista,
+    setVista
+  ] = useState<'LISTA' | 'CALENDARIO'>(
+    'LISTA'
+  )
 
   const [
     actividadesPlan,
@@ -864,6 +874,38 @@ function MantenimientoPage() {
               + Crear plan preventivo
             </button>
 
+            <div className="mantenimiento-selector-vista">
+
+              <button
+                type="button"
+                className={
+                  vista === 'LISTA'
+                    ? 'activo'
+                    : ''
+                }
+                onClick={() =>
+                  setVista('LISTA')
+                }
+              >
+                Lista
+              </button>
+
+              <button
+                type="button"
+                className={
+                  vista === 'CALENDARIO'
+                    ? 'activo'
+                    : ''
+                }
+                onClick={() =>
+                  setVista('CALENDARIO')
+                }
+              >
+                Calendario
+              </button>
+
+            </div>
+
             <button
               type="button"
               className="btn-asignar-plan"
@@ -1029,6 +1071,10 @@ function MantenimientoPage() {
               Completado
             </option>
 
+            <option value="CANCELADO">
+              Cancelado
+            </option>
+
           </select>
 
         </div>
@@ -1070,7 +1116,9 @@ function MantenimientoPage() {
 
         {/* TABLA */}
 
-        {!cargando && !error && (
+        {!cargando && 
+          !error && 
+          vista === 'LISTA' && (
 
           <div className="mantenimiento-tabla-wrapper">
 
@@ -1278,6 +1326,18 @@ function MantenimientoPage() {
             )}
 
           </div>
+
+        )}
+
+        {!cargando &&
+          !error &&
+          vista === 'CALENDARIO' && (
+
+          <CalendarioMantenimiento
+            mantenimientos={
+              mantenimientosFiltrados
+            }
+          />
 
         )}
 
