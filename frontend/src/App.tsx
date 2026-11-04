@@ -14,6 +14,7 @@ import AlmacenPage from './pages/AlmacenPage'
 import HistorialPage from './pages/HistorialPage'
 import ReportesPage from './pages/ReportesPage'
 import UsuariosPage from './pages/UsuariosPage'
+import OrdenTrabajoDetallePage from './pages/OrdenTrabajoDetallePage'
 
 import IncidenciaDetallePage from './pages/IncidenciaDetallePage'
 import MantenimientoDetallePage from './pages/MantenimientoDetallePage'
@@ -147,6 +148,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/ordenes-trabajo/:id"
+          element={
+            <ProtectedRoute permiso="orden.leer">
+              <OrdenTrabajoDetallePage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ALMACÉN */}
 

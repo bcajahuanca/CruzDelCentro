@@ -39,3 +39,42 @@ export interface OrdenTrabajoCreateRequest {
   proveedorId: number | null
   fechaEstimadaFin: string | null
 }
+
+export interface OrdenIncidencia {
+  id: number
+  codigo: string
+
+  unidadId: number
+  unidadCodigo: string
+  placa: string | null
+
+  tipo: string
+  descripcion: string
+
+  prioridad: string
+  estado: string
+
+  fechaReporte: string
+}
+
+export interface OrdenActividad {
+  id: number
+  ordenId: number
+  descripcion: string
+  ordenVisual: number
+  obligatoria: boolean
+  completada: boolean
+  realizadaPor: number | null
+  completadaEn: string | null
+  observaciones: string | null
+}
+
+export interface OrdenSeguimiento {
+  id: number
+  usuarioId: number | null
+  usuarioNombre: string | null
+  fecha: string
+  estadoAnterior: string | null
+  estadoNuevo: string
+  comentario: string | null
+}
