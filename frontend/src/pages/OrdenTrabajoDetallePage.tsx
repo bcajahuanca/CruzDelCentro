@@ -1690,9 +1690,7 @@ function OrdenTrabajoDetallePage() {
 
                                                             await abrirEvidenciaOrden(
                                                                 orden.id,
-                                                                evidencia.id,
-                                                                evidencia.nombreArchivo
-                                                            )
+                                                                evidencia.id,                                                            )
 
                                                         } catch (error) {
 
