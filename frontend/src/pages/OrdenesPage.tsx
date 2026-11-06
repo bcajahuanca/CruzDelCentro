@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom'
 
 import type {
+  OrdenResponsable,
   OrdenTrabajo
 } from '../types/OrdenTrabajo'
 
@@ -22,7 +23,8 @@ import {
 
 import {
   listarOrdenesTrabajo,
-  crearOrdenTrabajo
+  crearOrdenTrabajo,
+  listarResponsablesDisponibles
 } from '../services/ordenTrabajoService'
 
 import {
@@ -36,6 +38,7 @@ function OrdenesTrabajoPage() {
 
   const navigate = useNavigate()
 
+  const [responsables, setResponsables] = useState<OrdenResponsable[]>([])
 
   const [
     ordenes,
@@ -124,14 +127,17 @@ function OrdenesTrabajoPage() {
 
         const [
           ordenesData,
-          unidadesData
+          unidadesData,
+          responsablesData
         ] = await Promise.all([
           listarOrdenesTrabajo(),
-          listarUnidades()
+          listarUnidades(),
+          listarResponsablesDisponibles(),
         ])
 
         setOrdenes(ordenesData)
         setUnidades(unidadesData)
+        setResponsables(responsablesData)
 
       } catch (error) {
 
@@ -348,14 +354,14 @@ function OrdenesTrabajoPage() {
         programacionId:
           form.programacionId
             ? Number(
-                form.programacionId
-              )
+              form.programacionId
+            )
             : null,
 
         tipo:
           form.tipo as
-            'PREVENTIVO' |
-            'CORRECTIVO',
+          'PREVENTIVO' |
+          'CORRECTIVO',
 
         responsableId:
           Number(
@@ -365,8 +371,8 @@ function OrdenesTrabajoPage() {
         proveedorId:
           form.proveedorId
             ? Number(
-                form.proveedorId
-              )
+              form.proveedorId
+            )
             : null,
 
         fechaEstimadaFin:
@@ -637,488 +643,463 @@ function OrdenesTrabajoPage() {
         {!cargando &&
           !error && (
 
-          <div className="ordenes-tabla-wrapper">
+            <div className="ordenes-tabla-wrapper">
 
-            <table className="ordenes-tabla">
+              <table className="ordenes-tabla">
 
-              <thead>
+                <thead>
 
-                <tr>
+                  <tr>
 
-                  <th>
-                    Código
-                  </th>
+                    <th>
+                      Código
+                    </th>
 
-                  <th>
-                    Unidad
-                  </th>
+                    <th>
+                      Unidad
+                    </th>
 
-                  <th>
-                    Tipo
-                  </th>
+                    <th>
+                      Tipo
+                    </th>
 
-                  <th>
-                    Responsable
-                  </th>
+                    <th>
+                      Responsable
+                    </th>
 
-                  <th>
-                    Estado
-                  </th>
+                    <th>
+                      Estado
+                    </th>
 
-                  <th>
-                    Apertura
-                  </th>
+                    <th>
+                      Apertura
+                    </th>
 
-                  <th>
-                    Fin estimado
-                  </th>
+                    <th>
+                      Fin estimado
+                    </th>
 
-                  <th>
-                    Acciones
-                  </th>
+                    <th>
+                      Acciones
+                    </th>
 
-                </tr>
+                  </tr>
 
-              </thead>
-
-
-              <tbody>
-
-                {ordenesFiltradas.map(
-                  orden => (
-
-                    <tr
-                      key={orden.id}
-                    >
-
-                      <td>
-
-                        <strong>
-                          {orden.codigo}
-                        </strong>
-
-                      </td>
+                </thead>
 
 
-                      <td>
+                <tbody>
 
-                        <strong>
-                          PAD{' '}
-                          {
-                            orden.unidadCodigo
-                          }
-                        </strong>
+                  {ordenesFiltradas.map(
+                    orden => (
 
-                        <span className="orden-placa">
-                          {orden.placa}
-                        </span>
+                      <tr
+                        key={orden.id}
+                      >
 
-                      </td>
+                        <td>
+
+                          <strong>
+                            {orden.codigo}
+                          </strong>
+
+                        </td>
 
 
-                      <td>
+                        <td>
 
-                        <span
-                          className={
-                            `orden-tipo ${
+                          <strong>
+                            PAD{' '}
+                            {
+                              orden.unidadCodigo
+                            }
+                          </strong>
+
+                          <span className="orden-placa">
+                            {orden.placa}
+                          </span>
+
+                        </td>
+
+
+                        <td>
+
+                          <span
+                            className={
+                              `orden-tipo ${orden.tipo
+                                .toLowerCase()
+                              }`
+                            }
+                          >
+                            {mostrarTipo(
                               orden.tipo
-                                .toLowerCase()
-                            }`
+                            )}
+                          </span>
+
+                        </td>
+
+
+                        <td>
+                          {
+                            orden.responsable
                           }
-                        >
-                          {mostrarTipo(
-                            orden.tipo
-                          )}
-                        </span>
-
-                      </td>
+                        </td>
 
 
-                      <td>
-                        {
-                          orden.responsable
-                        }
-                      </td>
+                        <td>
 
-
-                      <td>
-
-                        <span
-                          className={
-                            `orden-estado ${
+                          <span
+                            className={
+                              `orden-estado ${orden.estado
+                                .toLowerCase()
+                              }`
+                            }
+                          >
+                            {mostrarEstado(
                               orden.estado
-                                .toLowerCase()
-                            }`
-                          }
-                        >
-                          {mostrarEstado(
-                            orden.estado
+                            )}
+                          </span>
+
+                        </td>
+
+
+                        <td>
+                          {mostrarFecha(
+                            orden.fechaApertura
                           )}
-                        </span>
-
-                      </td>
+                        </td>
 
 
-                      <td>
-                        {mostrarFecha(
-                          orden.fechaApertura
-                        )}
-                      </td>
+                        <td>
+                          {mostrarFecha(
+                            orden.fechaEstimadaFin
+                          )}
+                        </td>
 
 
-                      <td>
-                        {mostrarFecha(
-                          orden.fechaEstimadaFin
-                        )}
-                      </td>
+                        <td>
+
+                          <button
+                            type="button"
+                            className="btn-ver-orden"
+                            onClick={() =>
+                              navigate(
+                                `/ordenes-trabajo/${orden.id}`
+                              )
+                            }
+                          >
+                            Ver
+                          </button>
+
+                        </td>
+
+                      </tr>
+
+                    )
+                  )}
+
+                </tbody>
+
+              </table>
 
 
-                      <td>
+              {ordenesFiltradas.length ===
+                0 && (
 
-                        <button
-                          type="button"
-                          className="btn-ver-orden"
-                          onClick={() =>
-                            navigate(
-                              `/ordenes-trabajo/${orden.id}`
-                            )
-                          }
-                        >
-                          Ver
-                        </button>
+                  <p className="ordenes-vacio">
 
-                      </td>
+                    No se encontraron
+                    órdenes de trabajo.
 
-                    </tr>
+                  </p>
 
-                  )
                 )}
 
-              </tbody>
+            </div>
 
-            </table>
-
-
-            {ordenesFiltradas.length ===
-              0 && (
-
-              <p className="ordenes-vacio">
-
-                No se encontraron
-                órdenes de trabajo.
-
-              </p>
-
-            )}
-
-          </div>
-
-        )}
+          )}
 
 
         {/* MODAL */}
 
-        {mostrarFormulario && 
+        {mostrarFormulario &&
           tienePermiso('orden.crear') && (
 
-          <div className="orden-modal-fondo">
+            <div className="orden-modal-fondo">
 
-            <div className="orden-modal">
+              <div className="orden-modal">
 
-              <div className="orden-modal-header">
+                <div className="orden-modal-header">
 
-                <div>
+                  <div>
+                    <h2>
+                      Nueva orden de trabajo
+                    </h2>
 
-                  <h2>
-                    Nueva orden de trabajo
-                  </h2>
+                    <p>
+                      Registra una nueva intervención para una unidad.
+                    </p>
+                  </div>
 
-                  <p>
-                    Registra una nueva
-                    intervención para una unidad.
-                  </p>
+                  <button
+                    type="button"
+                    className="orden-modal-cerrar"
+                    onClick={() =>
+                      setMostrarFormulario(false)
+                    }
+                  >
+                    ×
+                  </button>
 
                 </div>
 
 
-                <button
-                  type="button"
-                  className="orden-modal-cerrar"
-                  onClick={() =>
-                    setMostrarFormulario(
-                      false
-                    )
-                  }
+                <form
+                  className="orden-form"
+                  onSubmit={guardarOrden}
                 >
-                  ×
-                </button>
 
-              </div>
+                  <div className="orden-form-grid">
 
+                    {/* UNIDAD */}
 
-              <form
-                className="orden-form"
-                onSubmit={guardarOrden}
-              >
+                    <div className="orden-campo">
 
-                <div className="orden-form-grid">
+                      <label>
+                        Unidad *
+                      </label>
 
+                      <select
+                        value={form.unidadId}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            unidadId: e.target.value
+                          })
+                        }
+                        required
+                      >
 
-                  {/* UNIDAD */}
+                        <option value="">
+                          Seleccionar unidad
+                        </option>
 
-                  <div className="orden-campo">
-
-                    <label>
-                      Unidad *
-                    </label>
-
-                    <select
-                      value={
-                        form.unidadId
-                      }
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          unidadId:
-                            e.target.value
-                        })
-                      }
-                      required
-                    >
-
-                      <option value="">
-                        Seleccionar unidad
-                      </option>
-
-
-                      {[...unidades]
-                        .sort(
-                          (a, b) =>
-                            Number(
-                              a.codigo
-                            ) -
-                            Number(
-                              b.codigo
-                            )
-                        )
-                        .map(
-                          unidad => (
+                        {[...unidades]
+                          .sort(
+                            (a, b) =>
+                              Number(a.codigo) -
+                              Number(b.codigo)
+                          )
+                          .map((unidad) => (
 
                             <option
-                              key={
-                                unidad.id
-                              }
-                              value={
-                                unidad.id
-                              }
+                              key={unidad.id}
+                              value={unidad.id}
                             >
-                              PAD{' '}
-                              {unidad.codigo}
+                              PAD {unidad.codigo} - {unidad.placa}
+                            </option>
+
+                          ))}
+
+                      </select>
+
+                    </div>
+
+
+                    {/* TIPO */}
+
+                    <div className="orden-campo">
+
+                      <label>
+                        Tipo *
+                      </label>
+
+                      <select
+                        value={form.tipo}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            tipo: e.target.value
+                          })
+                        }
+                      >
+
+                        <option value="CORRECTIVO">
+                          Correctivo
+                        </option>
+
+                        <option value="PREVENTIVO">
+                          Preventivo
+                        </option>
+
+                      </select>
+
+                    </div>
+
+
+                    {/* FIN ESTIMADO */}
+
+                    <div className="orden-campo">
+
+                      <label>
+                        Fecha estimada de fin
+                      </label>
+
+                      <input
+                        type="datetime-local"
+                        value={form.fechaEstimadaFin}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            fechaEstimadaFin:
+                              e.target.value
+                          })
+                        }
+                      />
+
+                    </div>
+
+
+                    {/* RESPONSABLE */}
+
+                    <div className="orden-campo">
+
+                      <label>
+                        Responsable *
+                      </label>
+
+                      <select
+                        value={form.responsableId}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            responsableId:
+                              e.target.value
+                          })
+                        }
+                        required
+                      >
+
+                        <option value="">
+                          Seleccionar responsable
+                        </option>
+
+                        {responsables.map(
+                          (responsable) => (
+
+                            <option
+                              key={responsable.id}
+                              value={responsable.id}
+                            >
+                              {responsable.nombres}{' '}
+                              {responsable.apellidos}
                               {' - '}
-                              {unidad.placa}
+                              {responsable.rol}
                             </option>
 
                           )
                         )}
 
-                    </select>
+                      </select>
+
+                    </div>
+
+
+                    {/* PROGRAMACIÓN */}
+
+                    <div className="orden-campo">
+
+                      <label>
+                        Programación relacionada
+                      </label>
+
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Opcional"
+                        value={form.programacionId}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            programacionId:
+                              e.target.value
+                          })
+                        }
+                      />
+
+                    </div>
+
+
+                    {/* PROVEEDOR */}
+
+                    <div className="orden-campo">
+
+                      <label>
+                        Proveedor
+                      </label>
+
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Opcional"
+                        value={form.proveedorId}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            proveedorId:
+                              e.target.value
+                          })
+                        }
+                      />
+
+                    </div>
 
                   </div>
 
 
-                  {/* TIPO */}
+                  {errorFormulario && (
 
-                  <div className="orden-campo">
+                    <p className="orden-form-error">
+                      {errorFormulario}
+                    </p>
 
-                    <label>
-                      Tipo *
-                    </label>
+                  )}
 
-                    <select
-                      value={form.tipo}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          tipo:
-                            e.target.value
-                        })
+
+                  <div className="orden-form-acciones">
+
+                    <button
+                      type="button"
+                      className="btn-cancelar-orden"
+                      disabled={guardando}
+                      onClick={() =>
+                        setMostrarFormulario(false)
                       }
                     >
+                      Cancelar
+                    </button>
 
-                      <option value="CORRECTIVO">
-                        Correctivo
-                      </option>
 
-                      <option value="PREVENTIVO">
-                        Preventivo
-                      </option>
-
-                    </select>
+                    <button
+                      type="submit"
+                      className="btn-guardar-orden"
+                      disabled={guardando}
+                    >
+                      {guardando
+                        ? 'Creando...'
+                        : 'Crear orden'
+                      }
+                    </button>
 
                   </div>
 
+                </form>
 
-                  {/* FIN ESTIMADO */}
-
-                  <div className="orden-campo">
-
-                    <label>
-                      Fecha estimada de fin
-                    </label>
-
-                    <input
-                      type="datetime-local"
-                      value={
-                        form.fechaEstimadaFin
-                      }
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          fechaEstimadaFin:
-                            e.target.value
-                        })
-                      }
-                    />
-
-                  </div>
-
-
-                  {/* RESPONSABLE */}
-
-                  <div className="orden-campo">
-
-                    <label>
-                      Responsable *
-                    </label>
-
-                    <input
-                      type="number"
-                      min="1"
-                      value={
-                        form.responsableId
-                      }
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          responsableId:
-                            e.target.value
-                        })
-                      }
-                    />
-
-                    <small>
-                      Por ahora usamos el ID
-                      del usuario responsable.
-                    </small>
-
-                  </div>
-
-
-                  {/* PROGRAMACIÓN */}
-
-                  <div className="orden-campo">
-
-                    <label>
-                      Programación relacionada
-                    </label>
-
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Opcional"
-                      value={
-                        form.programacionId
-                      }
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          programacionId:
-                            e.target.value
-                        })
-                      }
-                    />
-
-                  </div>
-
-
-                  {/* PROVEEDOR */}
-
-                  <div className="orden-campo">
-
-                    <label>
-                      Proveedor
-                    </label>
-
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Opcional"
-                      value={
-                        form.proveedorId
-                      }
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          proveedorId:
-                            e.target.value
-                        })
-                      }
-                    />
-
-                  </div>
-
-                </div>
-
-
-                {errorFormulario && (
-
-                  <p className="orden-form-error">
-                    {errorFormulario}
-                  </p>
-
-                )}
-
-
-                <div className="orden-form-acciones">
-
-                  <button
-                    type="button"
-                    className="btn-cancelar-orden"
-                    disabled={
-                      guardando
-                    }
-                    onClick={() =>
-                      setMostrarFormulario(
-                        false
-                      )
-                    }
-                  >
-                    Cancelar
-                  </button>
-
-
-                  <button
-                    type="submit"
-                    className="btn-guardar-orden"
-                    disabled={
-                      guardando
-                    }
-                  >
-                    {guardando
-                      ? 'Creando...'
-                      : 'Crear orden'
-                    }
-                  </button>
-
-                </div>
-
-              </form>
+              </div>
 
             </div>
 
-          </div>
-
-        )}
+          )}
 
       </div>
 

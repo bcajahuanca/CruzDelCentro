@@ -1,15 +1,33 @@
 import { NavLink } from 'react-router-dom'
+
 import logo from '../assets/ccentro_logo.png'
+
 import { useAuth } from '../context/AuthContext'
 
-function Sidebar() {
+
+interface SidebarProps {
+  abierto: boolean
+  cerrar: () => void
+}
+
+
+function Sidebar({
+  abierto,
+  cerrar
+}: SidebarProps) {
 
   const {
     tienePermiso
   } = useAuth()
 
+
   return (
-    <aside className="sidebar">
+
+    <aside
+      className={
+        `sidebar ${abierto ? 'abierto' : ''}`
+      }
+    >
 
       <div className="sidebar-brand">
 
@@ -32,99 +50,109 @@ function Sidebar() {
 
       <nav className="sidebar-menu">
 
-        {/* DASHBOARD */}
 
         {tienePermiso('dashboard.leer') && (
 
-          <NavLink to="/dashboard">
+          <NavLink
+            to="/dashboard"
+            onClick={cerrar}
+          >
             Dashboard
           </NavLink>
 
         )}
 
 
-        {/* UNIDADES */}
-
         {tienePermiso('unidad.leer') && (
 
-          <NavLink to="/unidades">
+          <NavLink
+            to="/unidades"
+            onClick={cerrar}
+          >
             Unidades
           </NavLink>
 
         )}
 
 
-        {/* INCIDENCIAS */}
-
         {tienePermiso('incidencia.leer') && (
 
-          <NavLink to="/incidencias">
+          <NavLink
+            to="/incidencias"
+            onClick={cerrar}
+          >
             Incidencias
           </NavLink>
 
         )}
 
 
-        {/* MANTENIMIENTO */}
-
         {tienePermiso('mantenimiento.leer') && (
 
-          <NavLink to="/mantenimiento">
+          <NavLink
+            to="/mantenimiento"
+            onClick={cerrar}
+          >
             Mantenimiento
           </NavLink>
 
         )}
 
 
-        {/* ÓRDENES DE TRABAJO */}
-
         {tienePermiso('orden.leer') && (
 
-          <NavLink to="/ordenes-trabajo">
+          <NavLink
+            to="/ordenes-trabajo"
+            onClick={cerrar}
+          >
             Órdenes de trabajo
           </NavLink>
 
         )}
 
 
-        {/* ALMACÉN */}
-
         {tienePermiso('inventario.leer') && (
 
-          <NavLink to="/almacen">
+          <NavLink
+            to="/almacen"
+            onClick={cerrar}
+          >
             Almacén
           </NavLink>
 
         )}
 
 
-        {/* HISTORIAL */}
-
         {tienePermiso('historial.leer') && (
 
-          <NavLink to="/historial">
+          <NavLink
+            to="/historial"
+            onClick={cerrar}
+          >
             Historial
           </NavLink>
 
         )}
 
 
-        {/* REPORTES */}
-
         {tienePermiso('reporte.leer') && (
 
-          <NavLink to="/reportes">
+          <NavLink
+            to="/reportes"
+            onClick={cerrar}
+          >
             Reportes
           </NavLink>
 
         )}
 
 
-        {/* USUARIOS */}
-
         {tienePermiso('usuario.administrar') && (
 
-          <NavLink to="/usuarios">
+          <NavLink
+            to="/usuarios"
+            onClick={cerrar}
+          >
             Usuarios
           </NavLink>
 

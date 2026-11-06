@@ -1,6 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 
-function Topbar() {
+interface TopbarProps {
+  abrirSidebar: () => void
+}
+
+function Topbar({
+  abrirSidebar
+}: TopbarProps) {
 
   const navigate = useNavigate()
 
@@ -19,7 +25,16 @@ function Topbar() {
   return (
     <header className="topbar">
 
-      <div>
+      <button
+        type="button"
+        className="menu-mobile-button"
+        onClick={abrirSidebar}
+      >
+        ☰
+      </button>
+
+      <div className="topbar-user-info">
+
         <span className="topbar-user">
           {usuario}
         </span>
@@ -27,6 +42,7 @@ function Topbar() {
         <span className="topbar-role">
           {rol}
         </span>
+
       </div>
 
       <button

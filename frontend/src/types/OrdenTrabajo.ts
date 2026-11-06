@@ -29,6 +29,14 @@ export interface OrdenTrabajo {
   finReal: string | null
   fechaEstimadaFin: string | null
   fechaCierre: string | null
+
+  resultadoPruebas?: string | null
+
+  kilometrajeIntervencion?: number | null
+
+  observacionesCierre?: string | null
+
+  motivoEstado?: string | null
 }
 
 export interface OrdenTrabajoCreateRequest {
@@ -77,4 +85,57 @@ export interface OrdenSeguimiento {
   estadoAnterior: string | null
   estadoNuevo: string
   comentario: string | null
+}
+
+export interface RepuestoDisponible {
+  repuestoId: number
+  codigo: string
+  nombre: string
+  unidadMedida: string
+  almacenId: number
+  almacenNombre: string
+  stock: number
+}
+
+export interface SalidaRepuestoResponse {
+  movimientoId: number
+  costoId: number
+  repuestoId: number
+  repuestoCodigo: string
+  repuestoNombre: string
+  cantidad: number
+  precioUnitario: number
+  subtotal: number
+}
+
+export interface OrdenCosto {
+  id: number
+  ordenId: number
+  categoria: string
+  naturaleza: string
+  descripcion: string
+  cantidad: number
+  precioUnitario: number
+  subtotal: number
+  origenInventario: boolean
+}
+
+export interface OrdenEvidencia {
+  id: number
+  ordenId: number
+  nombreArchivo: string
+  tipoContenido: string
+  tamanioBytes: number
+  descripcion: string | null
+  subidoPor: number
+  usuarioNombre: string
+  creadoEn: string
+}
+
+export interface OrdenResponsable {
+  id: number
+  nombres: string
+  apellidos: string
+  correo: string
+  rol: string
 }

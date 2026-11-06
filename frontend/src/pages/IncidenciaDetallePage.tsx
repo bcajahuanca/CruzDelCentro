@@ -6,12 +6,14 @@ import { obtenerIncidencia } from '../services/incidenciaService'
 
 import {
   crearOrdenTrabajo,
-  vincularIncidenciaOrden
+  vincularIncidenciaOrden,
+  listarResponsablesDisponibles,
 } from '../services/ordenTrabajoService'
 
 import { useAuth } from '../context/AuthContext'
 
 import '../styles/incidenciaDetalle.css'
+import type { OrdenResponsable } from '../types/OrdenTrabajo'
 
 function IncidenciaDetallePage() {
 
@@ -55,6 +57,14 @@ function IncidenciaDetallePage() {
     fechaEstimadaFin: ''
   })
 
+  const [responsables, setResponsables] =
+    useState<OrdenResponsable[]>([])
+
+  const [formOrden, setFormOrden] = useState({
+    responsableId: '',
+    fechaEstimadaFin: ''
+  })
+
   useEffect(() => {
 
     const cargarIncidencia = async () => {
@@ -70,12 +80,16 @@ function IncidenciaDetallePage() {
         setCargando(true)
         setError('')
 
-        const data =
-          await obtenerIncidencia(
-            Number(id)
-          )
+        const [
+          dataIncidencia,
+          dataResponsables
+        ] = await Promise.all([
+          obtenerIncidencia(Number(id)),
+          listarResponsablesDisponibles()
+        ])
 
-        setIncidencia(data)
+        setIncidencia(dataIncidencia)
+        setResponsables(dataResponsables)
 
       } catch (error) {
 
@@ -350,41 +364,40 @@ function IncidenciaDetallePage() {
 
           <div className="incidencia-detalle-header-acciones">
 
-          <span
-            className={
-              `incidencias-badge ${
-                incidencia.estado
+            <span
+              className={
+                `incidencias-badge ${incidencia.estado
                   .toLowerCase()
-              }`
-            }
-          >
-            {mostrarEstado(
-              incidencia.estado
-            )}
-          </span>
-
-
-          {tienePermiso('orden.crear') &&
-            incidencia.estado !== 'RESUELTA' &&
-            incidencia.estado !== 'CERRADA' &&
-            incidencia.estado !== 'ANULADA' && (
-
-            <button
-              type="button"
-              className="btn-generar-orden"
-              onClick={() => {
-
-                setErrorOrden('')
-
-                setMostrarGenerarOrden(true)
-              }}
+                }`
+              }
             >
-              Generar orden de trabajo
-            </button>
+              {mostrarEstado(
+                incidencia.estado
+              )}
+            </span>
 
-          )}
 
-        </div>
+            {tienePermiso('orden.crear') &&
+              incidencia.estado !== 'RESUELTA' &&
+              incidencia.estado !== 'CERRADA' &&
+              incidencia.estado !== 'ANULADA' && (
+
+                <button
+                  type="button"
+                  className="btn-generar-orden"
+                  onClick={() => {
+
+                    setErrorOrden('')
+
+                    setMostrarGenerarOrden(true)
+                  }}
+                >
+                  Generar orden de trabajo
+                </button>
+
+              )}
+
+          </div>
 
         </div>
 
@@ -443,9 +456,8 @@ function IncidenciaDetallePage() {
 
               <span
                 className={
-                  `incidencias-badge ${
-                    incidencia.prioridad
-                      .toLowerCase()
+                  `incidencias-badge ${incidencia.prioridad
+                    .toLowerCase()
                   }`
                 }
               >
@@ -537,14 +549,14 @@ function IncidenciaDetallePage() {
               'incidencia.gestionar'
             ) && (
 
-              <button
-                type="button"
-                className="btn-secundario-incidencia"
-              >
-                Asignar responsable
-              </button>
+                <button
+                  type="button"
+                  className="btn-secundario-incidencia"
+                >
+                  Asignar responsable
+                </button>
 
-            )}
+              )}
 
           </div>
 
@@ -570,14 +582,14 @@ function IncidenciaDetallePage() {
               'incidencia.gestionar'
             ) && (
 
-              <button
-                type="button"
-                className="btn-secundario-incidencia"
-              >
-                Cambiar estado
-              </button>
+                <button
+                  type="button"
+                  className="btn-secundario-incidencia"
+                >
+                  Cambiar estado
+                </button>
 
-            )}
+              )}
 
           </div>
 
@@ -603,14 +615,14 @@ function IncidenciaDetallePage() {
               'incidencia.gestionar'
             ) && (
 
-              <button
-                type="button"
-                className="btn-secundario-incidencia"
-              >
-                + Adjuntar evidencia
-              </button>
+                <button
+                  type="button"
+                  className="btn-secundario-incidencia"
+                >
+                  + Adjuntar evidencia
+                </button>
 
-            )}
+              )}
 
           </div>
 
@@ -627,205 +639,221 @@ function IncidenciaDetallePage() {
           'incidencia.gestionar'
         ) && (
 
-          <div className="incidencia-detalle-acciones">
+            <div className="incidencia-detalle-acciones">
 
-            <button
-              type="button"
-              className="btn-resolver-incidencia"
-            >
-              Resolver incidencia
-            </button>
+              <button
+                type="button"
+                className="btn-resolver-incidencia"
+              >
+                Resolver incidencia
+              </button>
 
-            <button
-              type="button"
-              className="btn-cerrar-incidencia"
-            >
-              Cerrar incidencia
-            </button>
+              <button
+                type="button"
+                className="btn-cerrar-incidencia"
+              >
+                Cerrar incidencia
+              </button>
 
-            <button
-              type="button"
-              className="btn-anular-incidencia"
-            >
-              Anular
-            </button>
+              <button
+                type="button"
+                className="btn-anular-incidencia"
+              >
+                Anular
+              </button>
 
-          </div>
+            </div>
 
-        )}
+          )}
 
         {mostrarGenerarOrden &&
           tienePermiso('orden.crear') && (
 
-          <div className="incidencia-modal-fondo">
+            <div className="incidencia-modal-fondo">
 
-            <div className="incidencia-modal">
+              <div className="incidencia-modal">
 
-              <div className="incidencia-modal-header">
+                <div className="incidencia-modal-header">
 
-                <div>
+                  <div>
 
-                  <h2>
-                    Generar orden de trabajo
-                  </h2>
+                    <h2>
+                      Generar orden de trabajo
+                    </h2>
 
-                  <p>
-                    Se creará una orden correctiva
-                    vinculada a {incidencia.codigo}.
-                  </p>
-
-                </div>
-
-
-                <button
-                  type="button"
-                  className="incidencia-modal-cerrar"
-                  onClick={() =>
-                    setMostrarGenerarOrden(false)
-                  }
-                >
-                  ×
-                </button>
-
-              </div>
-
-
-              <form
-                className="incidencia-form"
-                onSubmit={generarOrdenTrabajo}
-              >
-
-                <div className="incidencia-form-grid">
-
-
-                  <div className="incidencia-campo">
-
-                    <label>
-                      Unidad
-                    </label>
-
-                    <input
-                      type="text"
-                      value={
-                        `PAD ${incidencia.unidadCodigo}${
-                          incidencia.placa
-                            ? ` - ${incidencia.placa}`
-                            : ''
-                        }`
-                      }
-                      disabled
-                    />
+                    <p>
+                      Se creará una orden correctiva
+                      vinculada a {incidencia.codigo}.
+                    </p>
 
                   </div>
-
-
-                  <div className="incidencia-campo">
-
-                    <label>
-                      Tipo
-                    </label>
-
-                    <input
-                      type="text"
-                      value="Correctivo"
-                      disabled
-                    />
-
-                  </div>
-
-
-                  <div className="incidencia-campo">
-
-                    <label>
-                      Responsable *
-                    </label>
-
-                    <input
-                      type="number"
-                      min="1"
-                      value={
-                        ordenForm.responsableId
-                      }
-                      onChange={(e) =>
-                        setOrdenForm({
-                          ...ordenForm,
-                          responsableId:
-                            e.target.value
-                        })
-                      }
-                      required
-                    />
-
-                  </div>
-
-
-                  <div className="incidencia-campo">
-
-                    <label>
-                      Fecha estimada de fin
-                    </label>
-
-                    <input
-                      type="datetime-local"
-                      value={
-                        ordenForm.fechaEstimadaFin
-                      }
-                      onChange={(e) =>
-                        setOrdenForm({
-                          ...ordenForm,
-                          fechaEstimadaFin:
-                            e.target.value
-                        })
-                      }
-                    />
-
-                  </div>
-
-                </div>
-
-
-                {errorOrden && (
-
-                  <p className="incidencia-form-error">
-                    {errorOrden}
-                  </p>
-
-                )}
-
-
-                <div className="incidencia-form-acciones">
 
                   <button
                     type="button"
-                    className="btn-cancelar-incidencia"
-                    disabled={generandoOrden}
+                    className="incidencia-modal-cerrar"
                     onClick={() =>
                       setMostrarGenerarOrden(false)
                     }
                   >
-                    Cancelar
-                  </button>
-
-
-                  <button
-                    type="submit"
-                    className="btn-guardar-incidencia"
-                    disabled={generandoOrden}
-                  >
-                    {generandoOrden
-                      ? 'Generando...'
-                      : 'Generar orden'}
+                    ×
                   </button>
 
                 </div>
 
-              </form>
+
+                <form
+                  className="incidencia-form"
+                  onSubmit={generarOrdenTrabajo}
+                >
+
+                  <div className="incidencia-form-grid">
+
+
+                    <div className="incidencia-campo">
+
+                      <label>
+                        Unidad
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          `PAD ${incidencia.unidadCodigo}${incidencia.placa
+                            ? ` - ${incidencia.placa}`
+                            : ''
+                          }`
+                        }
+                        disabled
+                      />
+
+                    </div>
+
+
+                    <div className="incidencia-campo">
+
+                      <label>
+                        Tipo
+                      </label>
+
+                      <input
+                        type="text"
+                        value="Correctivo"
+                        disabled
+                      />
+
+                    </div>
+
+
+                    <div className="incidencia-campo">
+
+                      <label>
+                        Responsable *
+                      </label>
+
+                      <select
+                        value={formOrden.responsableId}
+                        onChange={(e) =>
+                          setFormOrden({
+                            ...formOrden,
+                            responsableId:
+                              e.target.value
+                          })
+                        }
+                        required
+                      >
+
+                        <option value="">
+                          Seleccionar responsable
+                        </option>
+
+                        {responsables.map(
+                          (responsable) => (
+
+                            <option
+                              key={responsable.id}
+                              value={responsable.id}
+                            >
+                              {responsable.nombres}{' '}
+                              {responsable.apellidos}
+                              {' - '}
+                              {responsable.rol}
+                            </option>
+
+                          )
+                        )}
+
+                      </select>
+
+                    </div>
+
+
+                    <div className="incidencia-campo">
+
+                      <label>
+                        Fecha estimada de fin
+                      </label>
+
+                      <input
+                        type="datetime-local"
+                        value={
+                          formOrden.fechaEstimadaFin
+                        }
+                        onChange={(e) =>
+                          setFormOrden({
+                            ...formOrden,
+                            fechaEstimadaFin:
+                              e.target.value
+                          })
+                        }
+                      />
+
+                    </div>
+
+                  </div>
+
+
+                  {errorOrden && (
+
+                    <p className="incidencia-form-error">
+                      {errorOrden}
+                    </p>
+
+                  )}
+
+
+                  <div className="incidencia-form-acciones">
+
+                    <button
+                      type="button"
+                      className="btn-cancelar-incidencia"
+                      disabled={generandoOrden}
+                      onClick={() =>
+                        setMostrarGenerarOrden(false)
+                      }
+                    >
+                      Cancelar
+                    </button>
+
+
+                    <button
+                      type="submit"
+                      className="btn-guardar-incidencia"
+                      disabled={generandoOrden}
+                    >
+                      {generandoOrden
+                        ? 'Generando...'
+                        : 'Generar orden'}
+                    </button>
+
+                  </div>
+
+                </form>
+
+              </div>
 
             </div>
 
-          </div>
-
-        )}
+          )}
 
       </div>
 

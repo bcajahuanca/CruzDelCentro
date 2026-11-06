@@ -3,7 +3,12 @@ import type {
   OrdenTrabajoCreateRequest,
   OrdenIncidencia,
   OrdenActividad,
-  OrdenSeguimiento
+  OrdenSeguimiento,
+  RepuestoDisponible,
+  SalidaRepuestoResponse,
+  OrdenCosto,
+  OrdenEvidencia,
+  OrdenResponsable
 } from '../types/OrdenTrabajo'
 
 
@@ -434,6 +439,368 @@ export async function finalizarOrdenTrabajo(
       texto ||
       'No se pudo finalizar la orden'
     )
+  }
+
+  return response.json()
+}
+
+export async function listarRepuestosDisponibles(): Promise<RepuestoDisponible[]> {
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/repuestos-disponibles`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'No se pudieron cargar los repuestos disponibles'
+    )
+  }
+
+  return response.json()
+}
+
+export async function registrarSalidaRepuesto(
+  ordenId: number,
+  data: {
+    repuestoId: number
+    almacenId: number
+    cantidad: number
+    precioUnitario: number
+    motivo: string
+  }
+): Promise<SalidaRepuestoResponse> {
+
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/repuestos/salida`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+  )
+
+  if (!response.ok) {
+    const texto = await response.text()
+
+    throw new Error(
+      texto || 'No se pudo registrar la salida'
+    )
+  }
+
+  return response.json()
+}
+
+export async function listarCostosOrden(
+  ordenId: number
+): Promise<OrdenCosto[]> {
+
+  const token =
+    localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/costos`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'No se pudieron cargar los costos'
+    )
+  }
+
+  return response.json()
+}
+
+export async function crearCostoOrden(
+  ordenId: number,
+  data: {
+    categoria: 'MANO_OBRA' | 'SERVICIO' | 'OTRO'
+    naturaleza: 'ESTIMADO' | 'REAL'
+    descripcion: string
+    cantidad: number
+    precioUnitario: number
+  }
+): Promise<OrdenCosto> {
+
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/costos`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+  )
+
+  if (!response.ok) {
+    const texto = await response.text()
+
+    throw new Error(
+      texto || 'No se pudo registrar el costo'
+    )
+  }
+
+  return response.json()
+}
+
+export async function actualizarResultadoPruebasOrden(
+  ordenId: number,
+  resultadoPruebas: string
+) {
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/resultado-pruebas`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        resultadoPruebas
+      })
+    }
+  )
+
+  if (!response.ok) {
+    const texto = await response.text()
+
+    throw new Error(
+      texto || 'No se pudo guardar el resultado de pruebas'
+    )
+  }
+
+  return response.json()
+}
+
+export async function listarEvidenciasOrden(
+  ordenId: number
+): Promise<OrdenEvidencia[]> {
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/evidencias`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'No se pudieron cargar las evidencias'
+    )
+  }
+
+  return response.json()
+}
+
+export async function subirEvidenciaOrden(
+  ordenId: number,
+  archivo: File,
+  descripcion: string
+): Promise<OrdenEvidencia> {
+  const token = localStorage.getItem('token')
+
+  const formData = new FormData()
+
+  formData.append(
+    'archivo',
+    archivo
+  )
+
+  formData.append(
+    'descripcion',
+    descripcion
+  )
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/evidencias`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    }
+  )
+
+  if (!response.ok) {
+    const texto = await response.text()
+
+    throw new Error(
+      texto || 'No se pudo subir la evidencia'
+    )
+  }
+
+  return response.json()
+}
+
+export async function abrirEvidenciaOrden(
+  ordenId: number,
+  evidenciaId: number,
+  nombreArchivo: string
+) {
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/evidencias/${evidenciaId}/archivo`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'No se pudo abrir la evidencia'
+    )
+  }
+
+  const blob = await response.blob()
+
+  const url = URL.createObjectURL(blob)
+
+  window.open(
+    url,
+    '_blank'
+  )
+
+  setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 60000)
+}
+
+export async function actualizarKilometrajeOrden(
+  ordenId: number,
+  kilometraje: number
+) {
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/kilometraje`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        kilometraje
+      })
+    }
+  )
+
+  if (!response.ok) {
+    const texto = await response.text()
+
+    throw new Error(
+      texto || 'No se pudo guardar el kilometraje'
+    )
+  }
+
+  return response.json()
+}
+
+export async function cerrarOrdenTrabajo(
+  ordenId: number,
+  observaciones: string
+): Promise<OrdenTrabajo> {
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/cerrar`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        observaciones
+      })
+    }
+  )
+
+  if (!response.ok) {
+    const texto = await response.text()
+
+    throw new Error(
+      texto || 'No se pudo cerrar la orden'
+    )
+  }
+
+  return response.json()
+}
+
+export async function cancelarOrdenTrabajo(
+  ordenId: number,
+  motivo: string
+): Promise<OrdenTrabajo> {
+
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/${ordenId}/cancelar`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        motivo
+      })
+    }
+  )
+
+  if (!response.ok) {
+    const texto = await response.text()
+
+    throw new Error(
+      texto || 'No se pudo cancelar la orden'
+    )
+  }
+
+  return response.json()
+}
+
+export async function listarResponsablesDisponibles(): Promise<OrdenResponsable[]> {
+  const token = localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/responsables-disponibles`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('No se pudieron cargar los responsables')
   }
 
   return response.json()
