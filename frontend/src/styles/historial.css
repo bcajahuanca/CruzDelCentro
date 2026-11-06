@@ -295,3 +295,105 @@
 .historial-fila-click:hover {
   background: #f9fafb;
 }
+
+.historial-rango-fechas {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+}
+
+.historial-fecha-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.historial-fecha-campo label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475467;
+}
+
+.historial-fecha-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.historial-fecha-input input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px 0 38px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #101828;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.historial-fecha-input input:hover {
+  border-color: #98a2b3;
+}
+
+.historial-fecha-input input:focus {
+  border-color: #667085;
+  box-shadow: 0 0 0 3px rgba(102, 112, 133, 0.12);
+}
+
+.historial-fecha-separador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  color: #98a2b3;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.historial-limpiar-fechas {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #475467;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.historial-limpiar-fechas:hover {
+  background: #f2f4f7;
+  border-color: #98a2b3;
+}
+
+@media (max-width: 768px) {
+  .historial-rango-fechas {
+    align-items: stretch;
+  }
+
+  .historial-fecha-campo {
+    flex: 1 1 100%;
+  }
+
+  .historial-fecha-separador {
+    display: none;
+  }
+
+  .historial-limpiar-fechas {
+    width: 100%;
+  }
+}

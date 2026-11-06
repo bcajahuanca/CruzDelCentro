@@ -2,6 +2,7 @@ package com.cruzdelcentro.backend.service;
 
 import com.cruzdelcentro.backend.dto.HistorialEstadoResponse;
 import com.cruzdelcentro.backend.dto.HistorialMantenimientoResponse;
+import com.cruzdelcentro.backend.dto.HistorialResumenUnidadResponse;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -141,7 +142,9 @@ public class HistorialService {
             int pagina,
             String busqueda,
             String tipo,
-            String unidadCodigo) {
+            String unidadCodigo,
+            String fechaDesde,
+            String fechaHasta) {
 
         int limite = 20;
         int offset = pagina * limite;
@@ -156,6 +159,14 @@ public class HistorialService {
                 )
                 AND (? = 'TODOS' OR h.tipo = ?)
                 AND (? = 'TODAS' OR h.unidad = ?)
+                AND (
+                    CAST(? AS date) IS NULL
+                    OR h.fecha_cierre::date >= CAST(? AS date)
+                )
+                AND (
+                    CAST(? AS date) IS NULL
+                    OR h.fecha_cierre::date <= CAST(? AS date)
+                )
                 """;
 
         String texto = busqueda == null
@@ -176,6 +187,16 @@ public class HistorialService {
         String unidadFiltro = unidadCodigo == null
                 ? "TODAS"
                 : unidadCodigo;
+
+        String desde = fechaDesde == null ||
+                fechaDesde.isBlank()
+                        ? null
+                        : fechaDesde;
+
+        String hasta = fechaHasta == null ||
+                fechaHasta.isBlank()
+                        ? null
+                        : fechaHasta;
 
         String sql = """
                 SELECT
@@ -255,6 +276,10 @@ public class HistorialService {
                 tipoFiltro,
                 unidadFiltro,
                 unidadFiltro,
+                desde,
+                desde,
+                hasta,
+                hasta,
                 limite,
                 offset);
 
@@ -268,7 +293,11 @@ public class HistorialService {
                 tipoFiltro,
                 tipoFiltro,
                 unidadFiltro,
-                unidadFiltro);
+                unidadFiltro,
+                desde,
+                desde,
+                hasta,
+                hasta);
 
         long cantidad = total == null
                 ? 0
@@ -282,5 +311,260 @@ public class HistorialService {
                 "paginaActual", pagina,
                 "totalRegistros", cantidad,
                 "totalPaginas", totalPaginas);
+    }
+
+    public List<HistorialResumenUnidadResponse> listarResumenUnidades(
+            String fechaDesde,
+            String fechaHasta,
+            String unidadCodigo) {
+
+        String desde = fechaDesde == null ||
+                fechaDesde.isBlank()
+                        ? null
+                        : fechaDesde;
+
+        String hasta = fechaHasta == null ||
+                fechaHasta.isBlank()
+                        ? null
+                        : fechaHasta;
+
+        String unidadFiltro = unidadCodigo == null
+                ? "TODAS"
+                : unidadCodigo;
+
+        return jdbcTemplate.query(
+                """
+                        WITH costos AS (
+                            SELECT
+                                ot.unidad_id,
+                                COUNT(DISTINCT ot.id) AS ordenes_cerradas,
+                                COALESCE(
+                                    SUM(
+                                        CASE
+                                            WHEN oc.naturaleza = 'REAL'
+                                            THEN oc.subtotal
+                                            ELSE 0
+                                        END
+                                    ),
+                                    0
+                                ) AS costo_real
+                            FROM orden_trabajo ot
+
+                            LEFT JOIN orden_costo oc
+                                ON oc.orden_id = ot.id
+
+                            WHERE ot.estado = 'CERRADA'
+
+                              AND (
+                                  CAST(? AS date) IS NULL
+                                  OR ot.fecha_cierre >= CAST(? AS date)
+                              )
+
+                              AND (
+                                  CAST(? AS date) IS NULL
+                                  OR ot.fecha_cierre <
+                                     CAST(? AS date) + INTERVAL '1 day'
+                              )
+
+                            GROUP BY ot.unidad_id
+                        ),
+
+                        tiempos AS (
+                            SELECT
+                                h.unidad_id,
+
+                                COALESCE(
+                                    SUM(
+                                        CASE
+                                            WHEN h.estado = 'EN_MANTENIMIENTO'
+                                            THEN EXTRACT(
+                                                EPOCH FROM (
+                                                    LEAST(
+                                                        COALESCE(
+                                                            h.fin,
+                                                            utc_now()
+                                                        ),
+                                                        CASE
+                                                            WHEN CAST(? AS date) IS NULL
+                                                            THEN COALESCE(
+                                                                h.fin,
+                                                                utc_now()
+                                                            )
+                                                            ELSE CAST(? AS date)
+                                                                 + INTERVAL '1 day'
+                                                        END
+                                                    )
+                                                    -
+                                                    GREATEST(
+                                                        h.inicio,
+                                                        CASE
+                                                            WHEN CAST(? AS date) IS NULL
+                                                            THEN h.inicio
+                                                            ELSE CAST(? AS date)
+                                                        END
+                                                    )
+                                                )
+                                            ) / 3600
+                                            ELSE 0
+                                        END
+                                    ),
+                                    0
+                                ) AS horas_mantenimiento,
+
+                                COALESCE(
+                                    SUM(
+                                        CASE
+                                            WHEN h.estado = 'FUERA_DE_SERVICIO'
+                                            THEN EXTRACT(
+                                                EPOCH FROM (
+                                                    LEAST(
+                                                        COALESCE(
+                                                            h.fin,
+                                                            utc_now()
+                                                        ),
+                                                        CASE
+                                                            WHEN CAST(? AS date) IS NULL
+                                                            THEN COALESCE(
+                                                                h.fin,
+                                                                utc_now()
+                                                            )
+                                                            ELSE CAST(? AS date)
+                                                                 + INTERVAL '1 day'
+                                                        END
+                                                    )
+                                                    -
+                                                    GREATEST(
+                                                        h.inicio,
+                                                        CASE
+                                                            WHEN CAST(? AS date) IS NULL
+                                                            THEN h.inicio
+                                                            ELSE CAST(? AS date)
+                                                        END
+                                                    )
+                                                )
+                                            ) / 3600
+                                            ELSE 0
+                                        END
+                                    ),
+                                    0
+                                ) AS horas_fuera_servicio
+
+                            FROM estado_unidad_historial h
+
+                            WHERE
+                                (
+                                    CAST(? AS date) IS NULL
+                                    OR COALESCE(h.fin, utc_now())
+                                       >= CAST(? AS date)
+                                )
+
+                                AND (
+                                    CAST(? AS date) IS NULL
+                                    OR h.inicio <
+                                       CAST(? AS date)
+                                       + INTERVAL '1 day'
+                                )
+
+                            GROUP BY h.unidad_id
+                        )
+
+                        SELECT
+                            u.id AS unidad_id,
+                            u.codigo,
+                            u.placa,
+
+                            COALESCE(
+                                c.ordenes_cerradas,
+                                0
+                            ) AS ordenes_cerradas,
+
+                            COALESCE(
+                                c.costo_real,
+                                0
+                            ) AS costo_real,
+
+                            ROUND(
+                                COALESCE(
+                                    t.horas_mantenimiento,
+                                    0
+                                )::numeric,
+                                2
+                            ) AS horas_mantenimiento,
+
+                            ROUND(
+                                COALESCE(
+                                    t.horas_fuera_servicio,
+                                    0
+                                )::numeric,
+                                2
+                            ) AS horas_fuera_servicio,
+
+                            ROUND(
+                                (
+                                    COALESCE(
+                                        t.horas_mantenimiento,
+                                        0
+                                    )
+                                    +
+                                    COALESCE(
+                                        t.horas_fuera_servicio,
+                                        0
+                                    )
+                                )::numeric,
+                                2
+                            ) AS horas_inmovilizado
+
+                        FROM unidad u
+
+                        LEFT JOIN costos c
+                            ON c.unidad_id = u.id
+
+                        LEFT JOIN tiempos t
+                            ON t.unidad_id = u.id
+
+                        WHERE
+                            (? = 'TODAS' OR u.codigo = ?)
+
+                        ORDER BY
+                            u.codigo
+                        """,
+
+                (rs, rowNum) -> new HistorialResumenUnidadResponse(
+                        rs.getLong("unidad_id"),
+                        rs.getString("codigo"),
+                        rs.getString("placa"),
+                        rs.getLong("ordenes_cerradas"),
+                        rs.getBigDecimal("costo_real"),
+                        rs.getBigDecimal("horas_mantenimiento"),
+                        rs.getBigDecimal("horas_fuera_servicio"),
+                        rs.getBigDecimal("horas_inmovilizado")),
+
+                // costos
+                desde,
+                desde,
+                hasta,
+                hasta,
+
+                // mantenimiento
+                hasta,
+                hasta,
+                desde,
+                desde,
+
+                // fuera de servicio
+                hasta,
+                hasta,
+                desde,
+                desde,
+
+                // intersección historial
+                desde,
+                desde,
+                hasta,
+                hasta,
+
+                // unidad
+                unidadFiltro,
+                unidadFiltro);
     }
 }

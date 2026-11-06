@@ -7,12 +7,14 @@ import { useNavigate } from 'react-router-dom'
 
 import type {
   HistorialEstado,
-  HistorialMantenimiento
+  HistorialMantenimiento,
+  HistorialResumenUnidad,
 } from '../types/Historial'
 
 import {
   listarHistorialEstados,
-  listarHistorialMantenimientos
+  listarHistorialMantenimientos,
+  listarResumenUnidades,
 } from '../services/historialService'
 
 import {
@@ -31,9 +33,11 @@ function HistorialPage() {
   const navigate = useNavigate()
 
   const [tab, setTab] =
-    useState<'ESTADOS' | 'MANTENIMIENTOS'>(
-      'ESTADOS'
-    )
+    useState<
+      'ESTADOS' |
+      'MANTENIMIENTOS' |
+      'RESUMEN'
+    >('ESTADOS')
 
 
   const [historial, setHistorial] =
@@ -96,9 +100,20 @@ function HistorialPage() {
     setTotalFueraServicio
   ] = useState(0)
 
+  const [fechaDesde, setFechaDesde] =
+    useState('')
+
+  const [fechaHasta, setFechaHasta] =
+    useState('')
+
 
   const [unidades, setUnidades] =
     useState<Unidad[]>([])
+
+  const [
+    resumenUnidades,
+    setResumenUnidades
+  ] = useState<HistorialResumenUnidad[]>([])
 
 
   /*
@@ -188,7 +203,7 @@ function HistorialPage() {
             datos.totalFueraServicio
           )
 
-        } else {
+        } else if (tab === 'MANTENIMIENTOS') {
 
           const datos =
             await listarHistorialMantenimientos(
@@ -196,7 +211,9 @@ function HistorialPage() {
               busqueda,
               tipoFiltro,
               unidadSeleccionada,
-              controller.signal
+              fechaDesde,
+              fechaHasta,
+              controller.signal,
             )
 
           if (
@@ -215,6 +232,24 @@ function HistorialPage() {
           setTotalRegistros(
             datos.totalRegistros
           )
+        } else {
+
+          const datos =
+            await listarResumenUnidades(
+              fechaDesde,
+              fechaHasta,
+              unidadSeleccionada,
+              controller.signal
+            )
+
+          if (controller.signal.aborted) {
+            return
+          }
+
+          setResumenUnidades(datos)
+
+          setTotalRegistros(datos.length)
+          setTotalPaginas(1)
         }
 
       } catch (error) {
@@ -254,14 +289,17 @@ function HistorialPage() {
     busqueda,
     estadoFiltro,
     tipoFiltro,
-    unidadSeleccionada
+    unidadSeleccionada,
+    fechaDesde,
+    fechaHasta
   ])
 
 
   const cambiarTab = (
     nuevoTab:
       'ESTADOS' |
-      'MANTENIMIENTOS'
+      'MANTENIMIENTOS' |
+      'RESUMEN'
   ) => {
 
     setTab(nuevoTab)
@@ -421,6 +459,20 @@ function HistorialPage() {
           }
         >
           Mantenimientos
+        </button>
+
+        <button
+          type="button"
+          className={
+            tab === 'RESUMEN'
+              ? 'historial-tab activo'
+              : 'historial-tab'
+          }
+          onClick={() =>
+            cambiarTab('RESUMEN')
+          }
+        >
+          Costos e inmovilización
         </button>
 
       </div>
@@ -705,8 +757,8 @@ function HistorialPage() {
                         <td>
                           {registro.fin
                             ? mostrarFecha(
-                                registro.fin
-                              )
+                              registro.fin
+                            )
                             : 'Actual'
                           }
                         </td>
@@ -743,96 +795,302 @@ function HistorialPage() {
 
           {tab === 'MANTENIMIENTOS' && (
 
+            <>
+
+              {tab === 'MANTENIMIENTOS' && (
+                <div className="historial-rango-fechas">
+
+                  <div className="historial-fecha-campo">
+                    <label htmlFor="fechaDesde">
+                      Desde
+                    </label>
+
+                    <div className="historial-fecha-input">
+
+                      <input
+                        id="fechaDesde"
+                        type="date"
+                        value={fechaDesde}
+                        onChange={(e) => {
+                          setFechaDesde(e.target.value)
+                          setPagina(0)
+                        }}
+                      />
+                    </div>
+                  </div>
+
+
+                  <div className="historial-fecha-separador">
+                    →
+                  </div>
+
+
+                  <div className="historial-fecha-campo">
+                    <label htmlFor="fechaHasta">
+                      Hasta
+                    </label>
+
+                    <div className="historial-fecha-input">
+
+                      <input
+                        id="fechaHasta"
+                        type="date"
+                        value={fechaHasta}
+                        min={fechaDesde || undefined}
+                        onChange={(e) => {
+                          setFechaHasta(e.target.value)
+                          setPagina(0)
+                        }}
+                      />
+                    </div>
+                  </div>
+
+
+                  {(fechaDesde || fechaHasta) && (
+                    <button
+                      type="button"
+                      className="historial-limpiar-fechas"
+                      onClick={() => {
+                        setFechaDesde('')
+                        setFechaHasta('')
+                        setPagina(0)
+                      }}
+                    >
+                      Limpiar fechas
+                    </button>
+                  )}
+
+                </div>
+              )}
+
+              <div className="historial-tabla-wrapper">
+
+                <table className="historial-tabla">
+
+                  <thead>
+
+                    <tr>
+                      <th>OT</th>
+                      <th>PAD</th>
+                      <th>Placa</th>
+                      <th>Tipo</th>
+                      <th>Fecha cierre</th>
+                      <th>Kilometraje</th>
+                      <th>Costo real</th>
+                      <th>Costo estimado</th>
+                      <th>Diagnóstico</th>
+                      <th>Resultado</th>
+                    </tr>
+
+                  </thead>
+
+
+                  <tbody>
+
+                    {mantenimientos.map(
+                      mantenimiento => (
+
+                        <tr
+                          key={
+                            mantenimiento.ordenId
+                          }
+                          className="historial-fila-click"
+                          onClick={() =>
+                            navigate(
+                              `/ordenes-trabajo/${mantenimiento.ordenId}`
+                            )
+                          }
+                        >
+
+                          <td className="historial-pad">
+                            {mantenimiento.codigo}
+                          </td>
+
+                          <td>
+                            {mantenimiento.unidad}
+                          </td>
+
+                          <td>
+                            {mantenimiento.placa ||
+                              '-'}
+                          </td>
+
+                          <td>
+
+                            <span
+                              className={
+                                `historial-badge ${mantenimiento.tipo.toLowerCase()}`
+                              }
+                            >
+                              {mostrarTipo(
+                                mantenimiento.tipo
+                              )}
+                            </span>
+
+                          </td>
+
+                          <td>
+                            {mostrarFecha(
+                              mantenimiento.fechaCierre
+                            )}
+                          </td>
+
+                          <td>
+                            {mantenimiento
+                              .kilometrajeIntervencion
+                              ?.toLocaleString(
+                                'es-PE'
+                              )
+                              ?? '-'
+                            }
+                          </td>
+
+                          <td>
+                            {mostrarDinero(
+                              mantenimiento.costoReal
+                            )}
+                          </td>
+
+                          <td>
+                            {mostrarDinero(
+                              mantenimiento.costoEstimado
+                            )}
+                          </td>
+
+                          <td>
+                            {mantenimiento.diagnostico ||
+                              'Sin diagnóstico'}
+                          </td>
+
+                          <td>
+                            {mantenimiento.resultadoPruebas ||
+                              'Sin resultado'}
+                          </td>
+
+                        </tr>
+
+                      )
+                    )}
+
+                  </tbody>
+
+                </table>
+
+
+                {mantenimientos.length === 0 && (
+
+                  <p className="historial-vacio">
+                    No se encontraron mantenimientos.
+                  </p>
+
+                )}
+
+              </div>
+            </>
+          )}
+
+          {tab === 'RESUMEN' && (
+
             <div className="historial-tabla-wrapper">
+
+              <div className="historial-resumen">
+
+                <div>
+                  <span>Costo real acumulado</span>
+                  <strong>
+                    {mostrarDinero(
+                      resumenUnidades.reduce(
+                        (total, item) =>
+                          total + item.costoReal,
+                        0
+                      )
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Horas en mantenimiento</span>
+                  <strong>
+                    {resumenUnidades
+                      .reduce(
+                        (total, item) =>
+                          total +
+                          item.horasMantenimiento,
+                        0
+                      )
+                      .toFixed(2)
+                    } h
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Total inmovilizado</span>
+                  <strong>
+                    {resumenUnidades
+                      .reduce(
+                        (total, item) =>
+                          total +
+                          item.horasInmovilizado,
+                        0
+                      )
+                      .toFixed(2)
+                    } h
+                  </strong>
+                </div>
+
+              </div>
 
               <table className="historial-tabla">
 
                 <thead>
-
                   <tr>
-                    <th>OT</th>
                     <th>PAD</th>
                     <th>Placa</th>
-                    <th>Tipo</th>
-                    <th>Fecha cierre</th>
-                    <th>Kilometraje</th>
+                    <th>OT cerradas</th>
                     <th>Costo real</th>
-                    <th>Costo estimado</th>
+                    <th>Horas mantenimiento</th>
+                    <th>Horas fuera servicio</th>
+                    <th>Total inmovilizado</th>
                   </tr>
-
                 </thead>
-
 
                 <tbody>
 
-                  {mantenimientos.map(
-                    mantenimiento => (
+                  {resumenUnidades.map(
+                    registro => (
 
-                      <tr
-                        key={
-                          mantenimiento.ordenId
-                        }
-                        className="historial-fila-click"
-                        onClick={() =>
-                          navigate(
-                            `/ordenes-trabajo/${mantenimiento.ordenId}`
-                          )
-                        }
-                      >
+                      <tr key={registro.unidadId}>
 
                         <td className="historial-pad">
-                          {mantenimiento.codigo}
+                          {registro.codigo}
                         </td>
 
                         <td>
-                          {mantenimiento.unidad}
+                          {registro.placa || '-'}
                         </td>
 
                         <td>
-                          {mantenimiento.placa ||
-                            '-'}
-                        </td>
-
-                        <td>
-
-                          <span
-                            className={
-                              `historial-badge ${mantenimiento.tipo.toLowerCase()}`
-                            }
-                          >
-                            {mostrarTipo(
-                              mantenimiento.tipo
-                            )}
-                          </span>
-
-                        </td>
-
-                        <td>
-                          {mostrarFecha(
-                            mantenimiento.fechaCierre
-                          )}
-                        </td>
-
-                        <td>
-                          {mantenimiento
-                            .kilometrajeIntervencion
-                            ?.toLocaleString(
-                              'es-PE'
-                            )
-                            ?? '-'
-                          }
+                          {registro.ordenesCerradas}
                         </td>
 
                         <td>
                           {mostrarDinero(
-                            mantenimiento.costoReal
+                            registro.costoReal
                           )}
                         </td>
 
                         <td>
-                          {mostrarDinero(
-                            mantenimiento.costoEstimado
-                          )}
+                          {registro.horasMantenimiento.toFixed(2)} h
+                        </td>
+
+                        <td>
+                          {registro.horasFueraServicio.toFixed(2)} h
+                        </td>
+
+                        <td>
+                          <strong>
+                            {registro.horasInmovilizado.toFixed(2)} h
+                          </strong>
                         </td>
 
                       </tr>
@@ -844,11 +1102,10 @@ function HistorialPage() {
 
               </table>
 
-
-              {mantenimientos.length === 0 && (
+              {resumenUnidades.length === 0 && (
 
                 <p className="historial-vacio">
-                  No se encontraron mantenimientos.
+                  No se encontraron datos para el periodo seleccionado.
                 </p>
 
               )}
@@ -863,64 +1120,64 @@ function HistorialPage() {
           {!cargando &&
             totalPaginas > 1 && (
 
-            <div className="historial-paginacion">
-
-              <button
-                disabled={
-                  pagina === 0
-                }
-                onClick={() =>
-                  setPagina(
-                    p => p - 1
-                  )
-                }
-              >
-                ← Anterior
-              </button>
-
-
-              {Array.from(
-                {
-                  length:
-                    totalPaginas
-                },
-                (_, i) => i
-              ).map(numero => (
+              <div className="historial-paginacion">
 
                 <button
-                  key={numero}
-                  className={
-                    pagina === numero
-                      ? 'pagina-activa'
-                      : ''
+                  disabled={
+                    pagina === 0
                   }
                   onClick={() =>
-                    setPagina(numero)
+                    setPagina(
+                      p => p - 1
+                    )
                   }
                 >
-                  {numero + 1}
+                  ← Anterior
                 </button>
 
-              ))}
+
+                {Array.from(
+                  {
+                    length:
+                      totalPaginas
+                  },
+                  (_, i) => i
+                ).map(numero => (
+
+                  <button
+                    key={numero}
+                    className={
+                      pagina === numero
+                        ? 'pagina-activa'
+                        : ''
+                    }
+                    onClick={() =>
+                      setPagina(numero)
+                    }
+                  >
+                    {numero + 1}
+                  </button>
+
+                ))}
 
 
-              <button
-                disabled={
-                  pagina >=
-                  totalPaginas - 1
-                }
-                onClick={() =>
-                  setPagina(
-                    p => p + 1
-                  )
-                }
-              >
-                Siguiente →
-              </button>
+                <button
+                  disabled={
+                    pagina >=
+                    totalPaginas - 1
+                  }
+                  onClick={() =>
+                    setPagina(
+                      p => p + 1
+                    )
+                  }
+                >
+                  Siguiente →
+                </button>
 
-            </div>
+              </div>
 
-          )}
+            )}
 
         </>
 

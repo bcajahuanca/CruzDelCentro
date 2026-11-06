@@ -1,6 +1,7 @@
 import type {
   HistorialPaginado,
-  HistorialMantenimientoPaginado
+  HistorialMantenimientoPaginado,
+  HistorialResumenUnidad,
 } from '../types/Historial'
 
 const API_URL =
@@ -53,6 +54,8 @@ export const listarHistorialMantenimientos = async (
   busqueda: string = '',
   tipo: string = 'TODOS',
   unidadCodigo: string = 'TODAS',
+  fechaDesde: string = '',
+  fechaHasta: string = '',
   signal?: AbortSignal
 ): Promise<HistorialMantenimientoPaginado> => {
 
@@ -66,6 +69,20 @@ export const listarHistorialMantenimientos = async (
       tipo,
       unidadCodigo
     })
+
+  if (fechaDesde) {
+    params.set(
+      'fechaDesde',
+      fechaDesde
+    )
+  }
+
+  if (fechaHasta) {
+    params.set(
+      'fechaHasta',
+      fechaHasta
+    )
+  }
 
   const response = await fetch(
     `${API_URL}/mantenimientos?${params.toString()}`,
@@ -81,6 +98,46 @@ export const listarHistorialMantenimientos = async (
   if (!response.ok) {
     throw new Error(
       'Error al cargar mantenimientos'
+    )
+  }
+
+  return response.json()
+}
+
+export const listarResumenUnidades = async (
+  fechaDesde: string = '',
+  fechaHasta: string = '',
+  unidadCodigo: string = 'TODAS',
+  signal?: AbortSignal
+): Promise<HistorialResumenUnidad[]> => {
+
+  const token = localStorage.getItem('token')
+
+  const params = new URLSearchParams({
+    unidadCodigo
+  })
+
+  if (fechaDesde) {
+    params.set('fechaDesde', fechaDesde)
+  }
+
+  if (fechaHasta) {
+    params.set('fechaHasta', fechaHasta)
+  }
+
+  const response = await fetch(
+    `${API_URL}/resumen-unidades?${params.toString()}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      signal
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'Error al cargar costos e inmovilización'
     )
   }
 

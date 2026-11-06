@@ -1,5 +1,6 @@
 package com.cruzdelcentro.backend.controller;
 
+import com.cruzdelcentro.backend.dto.HistorialResumenUnidadResponse;
 import com.cruzdelcentro.backend.service.HistorialService;
 
 import org.springframework.http.HttpStatus;
@@ -56,7 +57,9 @@ public class HistorialController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "") String busqueda,
             @RequestParam(defaultValue = "TODOS") String tipo,
-            @RequestParam(defaultValue = "TODAS") String unidadCodigo) {
+            @RequestParam(defaultValue = "TODAS") String unidadCodigo,
+            @RequestParam(required = false) String fechaDesde,
+            @RequestParam(required = false) String fechaHasta) {
 
         if (page < 0) {
             throw new ResponseStatusException(
@@ -78,6 +81,35 @@ public class HistorialController {
                 page,
                 busqueda,
                 tipo,
-                unidadCodigo);
+                unidadCodigo,
+                fechaDesde,
+                fechaHasta);
+    }
+
+    @PreAuthorize("hasAuthority('historial.leer')")
+    @GetMapping("/resumen-unidades")
+    public List<HistorialResumenUnidadResponse> listarResumenUnidades(
+            @RequestParam(required = false) String fechaDesde,
+
+            @RequestParam(required = false) String fechaHasta,
+
+            @RequestParam(defaultValue = "TODAS") String unidadCodigo) {
+
+        if (fechaDesde != null &&
+                fechaHasta != null &&
+                !fechaDesde.isBlank() &&
+                !fechaHasta.isBlank() &&
+                fechaDesde.compareTo(fechaHasta) > 0) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La fecha desde no puede ser posterior a la fecha hasta");
+        }
+
+        return historialService
+                .listarResumenUnidades(
+                        fechaDesde,
+                        fechaHasta,
+                        unidadCodigo);
     }
 }

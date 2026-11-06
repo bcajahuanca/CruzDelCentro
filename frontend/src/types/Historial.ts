@@ -50,3 +50,14 @@ export interface HistorialMantenimientoPaginado {
   totalRegistros: number
   totalPaginas: number
 }
+
+export interface HistorialResumenUnidad {
+  unidadId: number
+  codigo: string
+  placa: string | null
+  ordenesCerradas: number
+  costoReal: number
+  horasMantenimiento: number
+  horasFueraServicio: number
+  horasInmovilizado: number
+}
