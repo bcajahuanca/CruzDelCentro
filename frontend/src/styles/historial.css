@@ -261,3 +261,37 @@
   outline: none;
   border-color: #2563eb;
 }
+
+.historial-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.historial-tab {
+  border: none;
+  background: transparent;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #667085;
+  border-bottom: 2px solid transparent;
+}
+
+.historial-tab:hover {
+  color: #344054;
+}
+
+.historial-tab.activo {
+  color: #101828;
+  border-bottom-color: #101828;
+}
+
+.historial-fila-click {
+  cursor: pointer;
+}
+
+.historial-fila-click:hover {
+  background: #f9fafb;
+}

@@ -19,3 +19,34 @@ export interface HistorialPaginado {
   totalMantenimiento: number
   totalFueraServicio: number
 }
+
+export interface HistorialMantenimiento {
+  ordenId: number
+  codigo: string
+  unidadId: number
+  unidad: string
+  placa: string | null
+  tipo: 'PREVENTIVO' | 'CORRECTIVO'
+
+  fechaCierre: string | null
+  inicioReal: string | null
+  finReal: string | null
+
+  kilometrajeIntervencion: number | null
+
+  diagnostico: string | null
+  resultadoPruebas: string | null
+
+  responsableId: number | null
+  proveedorId: number | null
+
+  costoReal: number | null
+  costoEstimado: number | null
+}
+
+export interface HistorialMantenimientoPaginado {
+  registros: HistorialMantenimiento[]
+  paginaActual: number
+  totalRegistros: number
+  totalPaginas: number
+}

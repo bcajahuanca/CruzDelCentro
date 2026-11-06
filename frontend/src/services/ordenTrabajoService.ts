@@ -660,7 +660,6 @@ export async function subirEvidenciaOrden(
 export async function abrirEvidenciaOrden(
   ordenId: number,
   evidenciaId: number,
-  nombreArchivo: string
 ) {
   const token = localStorage.getItem('token')
 

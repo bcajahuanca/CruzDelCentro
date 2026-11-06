@@ -23,35 +23,61 @@ public class HistorialController {
     @PreAuthorize("hasAuthority('historial.leer')")
     @GetMapping("/estados")
     public Map<String, Object> listarEstados(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "") String busqueda,
-        @RequestParam(defaultValue = "TODOS") String estado,
-        @RequestParam(defaultValue = "TODAS") String unidadCodigo
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "") String busqueda,
+            @RequestParam(defaultValue = "TODOS") String estado,
+            @RequestParam(defaultValue = "TODAS") String unidadCodigo) {
         if (page < 0) {
             throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "La página no puede ser negativa"
-            );
+                    HttpStatus.BAD_REQUEST,
+                    "La página no puede ser negativa");
         }
 
         if (!List.of(
-            "TODOS",
-            "OPERATIVA",
-            "EN_MANTENIMIENTO",
-            "FUERA_DE_SERVICIO"
-        ).contains(estado)) {
+                "TODOS",
+                "OPERATIVA",
+                "EN_MANTENIMIENTO",
+                "FUERA_DE_SERVICIO").contains(estado)) {
             throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Filtro de estado inválido"
-            );
+                    HttpStatus.BAD_REQUEST,
+                    "Filtro de estado inválido");
         }
 
         return historialService.listarEstados(
-            page,
-            busqueda,
-            estado,
-            unidadCodigo
-        );
+                page,
+                busqueda,
+                estado,
+                unidadCodigo);
+    }
+
+    @PreAuthorize("hasAuthority('historial.leer')")
+    @GetMapping("/mantenimientos")
+    public Map<String, Object> listarMantenimientos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "") String busqueda,
+            @RequestParam(defaultValue = "TODOS") String tipo,
+            @RequestParam(defaultValue = "TODAS") String unidadCodigo) {
+
+        if (page < 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La página no puede ser negativa");
+        }
+
+        if (!List.of(
+                "TODOS",
+                "PREVENTIVO",
+                "CORRECTIVO").contains(tipo)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Filtro de tipo inválido");
+        }
+
+        return historialService.listarMantenimientos(
+                page,
+                busqueda,
+                tipo,
+                unidadCodigo);
     }
 }

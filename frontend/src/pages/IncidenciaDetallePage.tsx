@@ -51,7 +51,6 @@ function IncidenciaDetallePage() {
 
   const [
     ordenForm,
-    setOrdenForm
   ] = useState({
     responsableId: '3',
     fechaEstimadaFin: ''
