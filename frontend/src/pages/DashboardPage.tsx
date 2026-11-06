@@ -485,7 +485,7 @@ function DashboardPage() {
           <div className="dashboard-leyenda">
 
             {datosGrafico.map(
-              (item, index) => (
+              (item) => (
 
                 <div
                   key={item.estado}

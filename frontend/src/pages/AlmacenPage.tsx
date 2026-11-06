@@ -62,7 +62,7 @@ function AlmacenPage() {
       'REPUESTOS'
     )
 
-  const [movimientos, setMovimientos] =
+  const [, setMovimientos] =
     useState<MovimientoRepuesto[]>([])
 
   const [tipoMovimiento, setTipoMovimiento] =
