@@ -1,0 +1,427 @@
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #101828;
+}
+
+.dashboard-header p {
+  margin: 6px 0 0;
+  color: #667085;
+}
+
+.dashboard-kpis {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dashboard-kpi {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 18px;
+
+  background: white;
+
+  border:
+    1px solid #e4e7ec;
+
+  border-radius: 12px;
+}
+
+.dashboard-kpi-icon {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #f2f4f7;
+
+  color: #344054;
+}
+
+.dashboard-kpi span {
+  display: block;
+
+  font-size: 13px;
+
+  color: #667085;
+
+  margin-bottom: 4px;
+}
+
+.dashboard-kpi strong {
+  font-size: 26px;
+
+  color: #101828;
+}
+
+.dashboard-grid {
+  display: grid;
+
+  grid-template-columns:
+    1.3fr 0.7fr;
+
+  gap: 18px;
+}
+
+.dashboard-card {
+  background: #ffffff;
+
+  border:
+    1px solid #e4e7ec;
+
+  border-radius: 12px;
+
+  padding: 20px;
+}
+
+.dashboard-card-header h2 {
+  margin: 0;
+
+  font-size: 17px;
+
+  color: #101828;
+}
+
+.dashboard-card-header p {
+  margin: 5px 0 0;
+
+  font-size: 13px;
+
+  color: #667085;
+}
+
+.dashboard-grafico {
+  position: relative;
+}
+
+.dashboard-disponibilidad {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform:
+    translate(-50%, -50%);
+
+  text-align: center;
+
+  pointer-events: none;
+}
+
+.dashboard-disponibilidad span {
+  display: block;
+
+  font-size: 12px;
+
+  color: #667085;
+}
+
+.dashboard-disponibilidad strong {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 23px;
+
+  color: #101828;
+}
+
+.dashboard-leyenda {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.dashboard-leyenda-item {
+  display: grid;
+
+  grid-template-columns:
+    12px 1fr auto;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 13px;
+
+  color: #475467;
+}
+
+.dashboard-dot {
+  width: 9px;
+  height: 9px;
+
+  border-radius: 999px;
+}
+
+.dashboard-dot.operativa {
+  background: #12b76a;
+}
+
+.dashboard-dot.en_mantenimiento {
+  background: #f79009;
+}
+
+.dashboard-dot.fuera_de_servicio {
+  background: #f04438;
+}
+
+.dashboard-disponibilidad-grande {
+  min-height: 300px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.dashboard-disponibilidad-grande strong {
+  font-size: 52px;
+
+  color: #101828;
+}
+
+.dashboard-disponibilidad-grande span {
+  margin-top: 8px;
+
+  color: #667085;
+
+  font-size: 14px;
+}
+
+.dashboard-error {
+  padding: 14px;
+
+  background: #fef3f2;
+
+  color: #b42318;
+
+  border-radius: 9px;
+}
+
+.sector-0 {
+  fill: #12b76a;
+}
+
+.sector-1 {
+  fill: #f79009;
+}
+
+.sector-2 {
+  fill: #f04438;
+}
+
+@media (max-width: 1000px) {
+
+  .dashboard-kpis {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .dashboard-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-seccion-header {
+  margin: 8px 0 14px;
+}
+
+.dashboard-seccion-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #101828;
+}
+
+.dashboard-seccion-header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #667085;
+}
+
+.dashboard-kpis-secundarios {
+  margin-bottom: 24px;
+}
+
+.dashboard-atencion-lista {
+  display: flex;
+  flex-direction: column;
+  margin-top: 18px;
+}
+
+.dashboard-atencion-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 14px 0;
+
+  border-bottom:
+    1px solid #eaecf0;
+}
+
+.dashboard-atencion-item:last-child {
+  border-bottom: none;
+}
+
+.dashboard-atencion-unidad {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dashboard-atencion-unidad strong {
+  font-size: 14px;
+  color: #101828;
+}
+
+.dashboard-atencion-unidad span {
+  font-size: 12px;
+  color: #667085;
+}
+
+.dashboard-atencion-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  text-align: right;
+}
+
+.dashboard-atencion-info p {
+  margin: 0;
+
+  font-size: 12px;
+
+  color: #475467;
+}
+
+.dashboard-atencion-info small {
+  color: #667085;
+}
+
+.dashboard-estado {
+  padding: 4px 8px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.dashboard-estado.en_mantenimiento {
+  background: #fffaeb;
+  color: #b54708;
+}
+
+.dashboard-estado.fuera_de_servicio {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.dashboard-estado.operativa {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.dashboard-sin-datos {
+  padding: 35px 10px;
+
+  text-align: center;
+
+  color: #667085;
+
+  font-size: 13px;
+}
+
+.dashboard-proximos-lista {
+  display: flex;
+  flex-direction: column;
+  margin-top: 18px;
+}
+
+.dashboard-proximo-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 14px 0;
+
+  border-bottom: 1px solid #eaecf0;
+}
+
+.dashboard-proximo-item:last-child {
+  border-bottom: none;
+}
+
+.dashboard-proximo-unidad {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dashboard-proximo-unidad strong {
+  font-size: 14px;
+  color: #101828;
+}
+
+.dashboard-proximo-unidad span {
+  font-size: 12px;
+  color: #667085;
+}
+
+.dashboard-proximo-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  text-align: right;
+}
+
+.dashboard-proximo-info > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #344054;
+}
+
+.dashboard-proximo-info small {
+  color: #667085;
+  font-size: 11px;
+}
+
+.dashboard-card-tendencia {
+  margin-top: 18px;
+}
+
+.dashboard-chart-container {
+  width: 100%;
+  margin-top: 20px;
+  min-height: 300px;
+}
