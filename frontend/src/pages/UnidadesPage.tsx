@@ -4,15 +4,29 @@ import autoTable from "jspdf-autotable"
 import { useAuth } from '../context/AuthContext'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { Unidad } from '../types/Unidad'
+import type { Unidad, CrearUnidadRequest, Marca, ModeloVehiculo } from '../types/Unidad'
 import type { UnidadDetalle } from '../types/UnidadDetalle'
 
 import '../styles/unidades.css'
 import {
   listarUnidades,
   obtenerUnidadPorId,
-  actualizarUnidad
+  actualizarUnidad,
+  crearUnidad,
+  listarMarcas,
+  listarModelos,
 } from '../services/unidadService'
+
+import {
+  BusFront,
+  CircleCheck,
+  Wrench,
+  TriangleAlert,
+  Search,
+  Download,
+  Plus,
+  Eye
+} from 'lucide-react'
 
 function UnidadesPage() {
 
@@ -28,7 +42,7 @@ function UnidadesPage() {
   // const [unidadesSeleccionadas, setUnidadesSeleccionadas] = useState<Unidad | null>(null)
   const [unidadSeleccionada, setUnidadSeleccionada] =
     useState<UnidadDetalle | null>(null)
-  
+
   const [cargandoDetalle, setCargandoDetalle] = useState(false)
 
   const [busqueda, setBusqueda] = useState('')
@@ -43,6 +57,34 @@ function UnidadesPage() {
     observaciones: '',
     motivoCambio: ''
   })
+
+  const [modalNuevaUnidad, setModalNuevaUnidad] =
+    useState(false)
+
+  const [guardandoNuevaUnidad, setGuardandoNuevaUnidad] =
+    useState(false)
+
+  const [errorNuevaUnidad, setErrorNuevaUnidad] =
+    useState('')
+
+  const [formNuevaUnidad, setFormNuevaUnidad] =
+    useState({
+      codigo: '',
+      placa: '',
+      marcaId: '',
+      modeloId: '',
+      tipoVehiculo: 'BUS',
+      anioFabricacion: '',
+      estado: 'OPERATIVA',
+      activo: true,
+      observaciones: ''
+    })
+
+  const [marcas, setMarcas] =
+    useState<Marca[]>([])
+
+  const [modelos, setModelos] =
+    useState<ModeloVehiculo[]>([])
 
   useEffect(() => {
     const cargarUnidades = async () => {
@@ -82,8 +124,8 @@ function UnidadesPage() {
       estadoFiltro === "TODOS"
         ? unidades
         : unidades.filter(
-            (unidad) => unidad.estado === estadoFiltro
-          )
+          (unidad) => unidad.estado === estadoFiltro
+        )
 
     if (unidadesFiltradas.length === 0) {
       alert("No hay unidades para descargar")
@@ -99,10 +141,9 @@ function UnidadesPage() {
 
     doc.setFontSize(10)
     doc.text(
-      `Estado: ${
-        estadoFiltro === "TODOS"
-          ? "Todos los estados"
-          : estadoFiltro.replaceAll("_", " ")
+      `Estado: ${estadoFiltro === "TODOS"
+        ? "Todos los estados"
+        : estadoFiltro.replaceAll("_", " ")
       }`,
       14,
       22
@@ -177,7 +218,7 @@ function UnidadesPage() {
   }
 
   const guardarCambios = async () => {
-    if(!unidadSeleccionada) return
+    if (!unidadSeleccionada) return
 
     if (
       formEdicion.estado !== unidadSeleccionada.estado &&
@@ -206,7 +247,7 @@ function UnidadesPage() {
 
       setUnidades((anteriores) =>
         anteriores.map((u) =>
-          u.id === data.id 
+          u.id === data.id
             ? {
               ...u,
               placa: data.placa,
@@ -214,11 +255,137 @@ function UnidadesPage() {
               anioFabricacion: data.anioFabricacion,
               estado: data.estado
             }
-          : u
+            : u
         )
       )
     } catch (err) {
       setError('Error al guardar los cambios')
+    }
+  }
+
+  const guardarNuevaUnidad = async () => {
+
+    if (!formNuevaUnidad.codigo.trim()) {
+      setErrorNuevaUnidad(
+        'El código PAD es obligatorio'
+      )
+      return
+    }
+
+    if (!formNuevaUnidad.placa.trim()) {
+      setErrorNuevaUnidad(
+        'La placa es obligatoria'
+      )
+      return
+    }
+
+    if (!formNuevaUnidad.tipoVehiculo.trim()) {
+      setErrorNuevaUnidad(
+        'El tipo de vehículo es obligatorio'
+      )
+      return
+    }
+
+    if (!formNuevaUnidad.modeloId) {
+      setErrorNuevaUnidad(
+        'Debes seleccionar un modelo'
+      )
+      return
+    }
+
+    try {
+
+      setGuardandoNuevaUnidad(true)
+      setErrorNuevaUnidad('')
+
+      const request: CrearUnidadRequest = {
+
+        codigo:
+          formNuevaUnidad.codigo.trim().toUpperCase(),
+
+        placa:
+          formNuevaUnidad.placa
+            .trim()
+            .toUpperCase(),
+
+        modeloId:
+          Number(
+            formNuevaUnidad.modeloId
+          ),
+
+        tipoVehiculo:
+          formNuevaUnidad.tipoVehiculo,
+
+        anioFabricacion:
+          formNuevaUnidad.anioFabricacion
+            ? Number(
+              formNuevaUnidad
+                .anioFabricacion
+            )
+            : null,
+
+        estado:
+          formNuevaUnidad.estado,
+
+        activo:
+          formNuevaUnidad.activo,
+
+        observaciones:
+          formNuevaUnidad.observaciones
+            .trim()
+      }
+
+
+      await crearUnidad(request)
+
+      const actualizados = await listarUnidades()
+
+      setUnidades(actualizados)
+
+      setModalNuevaUnidad(false)
+
+    } catch (error) {
+
+      console.error(error)
+
+      setErrorNuevaUnidad(
+        'No se pudo registrar la unidad'
+      )
+
+    } finally {
+
+      setGuardandoNuevaUnidad(false)
+
+    }
+  }
+
+  const abrirNuevaUnidad = async () => {
+
+    setFormNuevaUnidad({
+      codigo: '',
+      placa: '',
+      marcaId: '',
+      modeloId: '',
+      tipoVehiculo: 'BUS',
+      anioFabricacion: '',
+      estado: 'OPERATIVA',
+      activo: true,
+      observaciones: ''
+    })
+
+    setModalNuevaUnidad(true)
+    setModelos([])
+    setErrorNuevaUnidad('')
+
+    try {
+      const data =
+        await listarMarcas()
+
+      setMarcas(data)
+      setModalNuevaUnidad(true)
+
+    } catch (error) {
+      console.error(error)
     }
   }
 
@@ -234,76 +401,189 @@ function UnidadesPage() {
     <div className="page-container">
 
       <div className="unidades-header">
+
         <div>
           <h1>Unidades</h1>
-          <p>Consulta y administra las unidades registradas en la flota.</p>
+          <p>
+            Consulta el estado, kilometraje y datos
+            principales de la flota.
+          </p>
         </div>
 
-        {tienePermiso('unidad.editar') && (
-          <button className="btn-nueva-unidad">
-            + Nueva unidad
+        <div className="unidades-header-acciones">
+
+          <button
+            type="button"
+            className="btn-descargar"
+            onClick={descargarUnidadesPDF}
+          >
+            <Download size={17} />
+            Exportar PDF
           </button>
-        )}
+
+          {tienePermiso('unidad.editar') && (
+            <button
+              type="button"
+              className="btn-nueva-unidad"
+              onClick={() => abrirNuevaUnidad()}
+            >
+              <Plus size={17} />
+              Nueva unidad
+            </button>
+          )}
+
+        </div>
+
       </div>
 
       <div className="unidades-resumen">
-        <div>
-          <span>Total de unidades</span>
-          <strong>{unidades.length}</strong>
+
+        <div className="unidad-kpi">
+
+          <div className="unidad-kpi-icon">
+            <BusFront size={21} />
+          </div>
+
+          <div>
+            <span>Total de unidades</span>
+            <strong>{unidades.length}</strong>
+          </div>
+
         </div>
 
-        <div>
-          <span>Operativas</span>
-          <strong>
-            {unidades.filter((u) => u.estado === 'OPERATIVA').length}
-          </strong>
+
+        <div className="unidad-kpi">
+
+          <div className="unidad-kpi-icon operativa">
+            <CircleCheck size={21} />
+          </div>
+
+          <div>
+            <span>Operativas</span>
+
+            <strong>
+              {
+                unidades.filter(
+                  u => u.estado === 'OPERATIVA'
+                ).length
+              }
+            </strong>
+          </div>
+
         </div>
 
-        <div>
-          <span>En mantenimiento</span>
-          <strong>
-            {unidades.filter((u) => u.estado === 'EN_MANTENIMIENTO').length}
-          </strong>
+
+        <div className="unidad-kpi">
+
+          <div className="unidad-kpi-icon mantenimiento">
+            <Wrench size={21} />
+          </div>
+
+          <div>
+            <span>En mantenimiento</span>
+
+            <strong>
+              {
+                unidades.filter(
+                  u =>
+                    u.estado ===
+                    'EN_MANTENIMIENTO'
+                ).length
+              }
+            </strong>
+          </div>
+
         </div>
 
-        <div>
-          <span>Fuera de servicio</span>
-          <strong>
-            {unidades.filter((u) => u.estado === 'FUERA_DE_SERVICIO').length}
-          </strong>
+
+        <div className="unidad-kpi">
+
+          <div className="unidad-kpi-icon fuera-servicio">
+            <TriangleAlert size={21} />
+          </div>
+
+          <div>
+            <span>Fuera de servicio</span>
+
+            <strong>
+              {
+                unidades.filter(
+                  u =>
+                    u.estado ===
+                    'FUERA_DE_SERVICIO'
+                ).length
+              }
+            </strong>
+          </div>
+
         </div>
+
       </div>
 
-      <div className="unidades-filtros">
+      <div className="unidades-panel">
 
-        <input
-          type="text"
-          placeholder="Buscar por PAD, placa, marca o modelo..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
+        <div className="unidades-filtros">
 
-        <select
-          value={estadoFiltro}
-          onChange={(e) => setEstadoFiltro(e.target.value)}
-        >
-          <option value="TODOS">Todos los estados</option>
-          <option value="OPERATIVA">Operativa</option>
-          <option value="EN_MANTENIMIENTO">
-            En mantenimiento
-          </option>
-          <option value="FUERA_DE_SERVICIO">
-            Fuera de servicio
-          </option>
-        </select>
+          <div className="unidades-buscador">
 
-        <button
-          type="button"
-          className="btn-descargar"
-          onClick={descargarUnidadesPDF}
-        >
-          Descargar
-        </button>
+            <Search size={18} />
+
+            <input
+              type="text"
+              placeholder="Buscar por PAD, placa, marca o modelo..."
+              value={busqueda}
+              onChange={
+                e =>
+                  setBusqueda(e.target.value)
+              }
+            />
+
+          </div>
+
+
+          <select
+            value={estadoFiltro}
+            onChange={
+              e =>
+                setEstadoFiltro(
+                  e.target.value
+                )
+            }
+          >
+            <option value="TODOS">
+              Todos los estados
+            </option>
+
+            <option value="OPERATIVA">
+              Operativa
+            </option>
+
+            <option value="EN_MANTENIMIENTO">
+              En mantenimiento
+            </option>
+
+            <option value="FUERA_DE_SERVICIO">
+              Fuera de servicio
+            </option>
+          </select>
+
+        </div>
+
+
+        <div className="unidades-resultados">
+          Mostrando{' '}
+          <strong>
+            {unidadesFiltradas.length}
+          </strong>{' '}
+          de {unidades.length} unidades
+        </div>
+
+
+        <div className="tabla-wrapper">
+
+          {/* tu tabla actual */}
+
+        </div>
 
       </div>
 
@@ -317,7 +597,7 @@ function UnidadesPage() {
 
           <thead>
             <tr>
-              <th>PAD</th>
+              <th>Unidad</th>
               <th>Placa</th>
               <th>Marca</th>
               <th>Modelo</th>
@@ -335,8 +615,12 @@ function UnidadesPage() {
 
               <tr key={unidad.id}>
 
-                <td className="codigo-pad">
-                  {unidad.codigo}
+                <td>
+                  <div className="unidad-identificador">
+                    <span className="unidad-pad">
+                      PAD {unidad.codigo}
+                    </span>
+                  </div>
                 </td>
 
                 <td>
@@ -374,11 +658,14 @@ function UnidadesPage() {
                 </td>
 
                 <td>
-                  <button 
+                  <button
                     className="btn-ver"
-                    onClick={() => verDetalle(unidad.id)}
+                    onClick={() =>
+                      verDetalle(unidad.id)
+                    }
                   >
-                    Ver
+                    <Eye size={16} />
+                    Ver detalle
                   </button>
                 </td>
 
@@ -406,20 +693,44 @@ function UnidadesPage() {
           onClick={() => setUnidadSeleccionada(null)}
         >
           <div
-            className="modal-unidad"
+            className="modal-unidad modal-unidad-detalle"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
-              <div>
-                <h2>Unidad {unidadSeleccionada.codigo}</h2>
-                <p>{unidadSeleccionada.placa}</p>
+
+            {/* HEADER */}
+            <div className="modal-header modal-header-detalle">
+
+              <div className="modal-header-info">
+
+                <h2>
+                  Unidad {unidadSeleccionada.codigo}
+                </h2>
+
+                <p>
+                  {unidadSeleccionada.placa}
+                </p>
+
+                <span
+                  className={`estado-badge ${unidadSeleccionada.estado.toLowerCase()}`}
+                >
+                  {unidadSeleccionada.estado === 'OPERATIVA' &&
+                    'Operativa'}
+
+                  {unidadSeleccionada.estado === 'EN_MANTENIMIENTO' &&
+                    'En mantenimiento'}
+
+                  {unidadSeleccionada.estado === 'FUERA_DE_SERVICIO' &&
+                    'Fuera de servicio'}
+                </span>
+
               </div>
+
 
               <div className="modal-acciones">
 
                 {tienePermiso('unidad.editar') && (
-
                   <button
+                    type="button"
                     className="btn-editar"
                     onClick={() =>
                       setModoEdicion(true)
@@ -427,10 +738,11 @@ function UnidadesPage() {
                   >
                     Editar
                   </button>
-
                 )}
 
+
                 <button
+                  type="button"
                   className="modal-cerrar"
                   onClick={() =>
                     setUnidadSeleccionada(null)
@@ -440,236 +752,835 @@ function UnidadesPage() {
                 </button>
 
               </div>
+
             </div>
 
-            <div className="detalle-grid">
-              {modoEdicion &&
-                tienePermiso('unidad.editar') ? (
-                <div className="form-edicion">
 
-                  <div className="form-edicion-header">
-                    <div>
-                      <h3>Editar unidad</h3>
-                      <p>Actualiza la información principal de la unidad.</p>
-                    </div>
-                  </div>
+            {/* SI ESTÁ EDITANDO */}
 
-                  <div className="form-grid">
+            {modoEdicion &&
+              tienePermiso('unidad.editar') ? (
 
-                    <label className="campo-formulario">
-                      <span>Placa</span>
-                      <input
-                        type="text"
-                        value={formEdicion.placa}
-                        onChange={(e) =>
-                          setFormEdicion({
-                            ...formEdicion,
-                            placa: e.target.value
-                          })
-                        }
-                      />
-                    </label>
+              <div className="form-edicion">
 
-                    <label className="campo-formulario">
-                      <span>Tipo de vehículo</span>
-                      <input
-                        type="text"
-                        value={formEdicion.tipoVehiculo}
-                        onChange={(e) =>
-                          setFormEdicion({
-                            ...formEdicion,
-                            tipoVehiculo: e.target.value
-                          })
-                        }
-                      />
-                    </label>
+                <div className="form-edicion-header">
+                  <h3>Editar unidad</h3>
 
-                    <label className="campo-formulario">
-                      <span>Año de fabricación</span>
-                      <input
-                        type="number"
-                        value={formEdicion.anioFabricacion}
-                        onChange={(e) =>
-                          setFormEdicion({
-                            ...formEdicion,
-                            anioFabricacion: e.target.value
-                          })
-                        }
-                      />
-                    </label>
+                  <p>
+                    Actualiza la información
+                    principal de la unidad.
+                  </p>
+                </div>
 
-                    <label className="campo-formulario">
-                      <span>Estado operativo</span>
 
-                      <select
-                        value={formEdicion.estado}
-                        onChange={(e) =>
-                          setFormEdicion({
-                            ...formEdicion,
-                            estado: e.target.value
-                          })
-                        }
-                      >
-                        <option value="OPERATIVA">
-                          Operativa
-                        </option>
+                <div className="form-grid">
 
-                        <option value="EN_MANTENIMIENTO">
-                          En mantenimiento
-                        </option>
+                  <label className="campo-formulario">
+                    <span>Placa</span>
 
-                        <option value="FUERA_DE_SERVICIO">
-                          Fuera de servicio
-                        </option>
-                      </select>
-                    </label>
-
-                  </div>
-
-                  {formEdicion.estado !== unidadSeleccionada.estado && (
-                    <label className="campo-formulario campo-observaciones">
-                      <span>Motivo del cambio de estado *</span>
-
-                      <textarea
-                        placeholder="Ejemplo: El bus presenta fallas en el sistema de frenos..."
-                        value={formEdicion.motivoCambio}
-                        onChange={(e) =>
-                          setFormEdicion({
-                            ...formEdicion,
-                            motivoCambio: e.target.value
-                          })
-                        }
-                        rows={3}
-                        required
-                      />
-                    </label>
-                  )}
-
-                  <label className="campo-formulario campo-observaciones">
-                    <span>Observaciones</span>
-
-                    <textarea
-                      placeholder="Agrega una observación sobre la unidad..."
-                      value={formEdicion.observaciones}
+                    <input
+                      type="text"
+                      value={formEdicion.placa}
                       onChange={(e) =>
                         setFormEdicion({
                           ...formEdicion,
-                          observaciones: e.target.value
+                          placa: e.target.value
                         })
                       }
                     />
                   </label>
 
-                  <div className="estado-activo">
-                    <div>
-                      <strong>Unidad activa</strong>
-                      <p>
-                        Indica si la unidad debe aparecer disponible dentro del sistema.
-                      </p>
-                    </div>
+                  <label className="campo-formulario">
+                    <span>
+                      Tipo de vehículo
+                    </span>
 
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={formEdicion.activo}
+                    <input
+                      type="text"
+                      value={
+                        formEdicion.tipoVehiculo
+                      }
+                      onChange={(e) =>
+                        setFormEdicion({
+                          ...formEdicion,
+                          tipoVehiculo:
+                            e.target.value
+                        })
+                      }
+                    />
+                  </label>
+
+
+                  <label className="campo-formulario">
+                    <span>
+                      Año de fabricación
+                    </span>
+
+                    <input
+                      type="number"
+                      value={
+                        formEdicion.anioFabricacion
+                      }
+                      onChange={(e) =>
+                        setFormEdicion({
+                          ...formEdicion,
+                          anioFabricacion:
+                            e.target.value
+                        })
+                      }
+                    />
+                  </label>
+
+
+                  <label className="campo-formulario">
+                    <span>
+                      Estado operativo
+                    </span>
+
+                    <select
+                      value={formEdicion.estado}
+                      onChange={(e) =>
+                        setFormEdicion({
+                          ...formEdicion,
+                          estado:
+                            e.target.value
+                        })
+                      }
+                    >
+
+                      <option value="OPERATIVA">
+                        Operativa
+                      </option>
+
+                      <option value="EN_MANTENIMIENTO">
+                        En mantenimiento
+                      </option>
+
+                      <option value="FUERA_DE_SERVICIO">
+                        Fuera de servicio
+                      </option>
+
+                    </select>
+                  </label>
+
+                </div>
+
+
+                {formEdicion.estado !==
+                  unidadSeleccionada.estado && (
+
+                    <label className="campo-formulario campo-observaciones">
+
+                      <span>
+                        Motivo del cambio de estado *
+                      </span>
+
+                      <textarea
+                        placeholder="Ejemplo: El bus presenta fallas en el sistema de frenos..."
+                        value={
+                          formEdicion.motivoCambio
+                        }
                         onChange={(e) =>
                           setFormEdicion({
                             ...formEdicion,
-                            activo: e.target.checked
+                            motivoCambio:
+                              e.target.value
                           })
                         }
+                        rows={3}
+                        required
                       />
 
-                      <span className="slider"></span>
                     </label>
+
+                  )}
+
+
+                <label className="campo-formulario campo-observaciones">
+
+                  <span>
+                    Observaciones
+                  </span>
+
+                  <textarea
+                    placeholder="Agrega una observación sobre la unidad..."
+                    value={
+                      formEdicion.observaciones
+                    }
+                    onChange={(e) =>
+                      setFormEdicion({
+                        ...formEdicion,
+                        observaciones:
+                          e.target.value
+                      })
+                    }
+                  />
+
+                </label>
+
+
+                <div className="estado-activo">
+
+                  <div>
+                    <strong>
+                      Unidad activa
+                    </strong>
+
+                    <p>
+                      Indica si la unidad debe
+                      aparecer disponible dentro
+                      del sistema.
+                    </p>
                   </div>
 
-                  <div className="acciones-edicion">
 
-                    <button
-                      className="btn-cancelar"
-                      onClick={() => setModoEdicion(false)}
-                    >
-                      Cancelar
-                    </button>
+                  <label className="switch">
 
-                    <button
-                      className="btn-guardar"
-                      onClick={guardarCambios}
-                    >
-                      Guardar cambios
-                    </button>
+                    <input
+                      type="checkbox"
+                      checked={
+                        formEdicion.activo
+                      }
+                      onChange={(e) =>
+                        setFormEdicion({
+                          ...formEdicion,
+                          activo:
+                            e.target.checked
+                        })
+                      }
+                    />
+
+                    <span className="slider" />
+
+                  </label>
+
+                </div>
+
+
+                <div className="acciones-edicion">
+
+                  <button
+                    type="button"
+                    className="btn-cancelar"
+                    onClick={() =>
+                      setModoEdicion(false)
+                    }
+                  >
+                    Cancelar
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-guardar"
+                    onClick={guardarCambios}
+                  >
+                    Guardar cambios
+                  </button>
+
+                </div>
+
+              </div>
+
+            ) : (
+
+              <>
+                {/* RESUMEN */}
+
+                <div className="detalle-resumen">
+
+                  <div className="detalle-resumen-card">
+                    <span>PAD</span>
+
+                    <strong>
+                      {unidadSeleccionada.codigo}
+                    </strong>
+                  </div>
+
+
+                  <div className="detalle-resumen-card">
+                    <span>Estado</span>
+
+                    <strong>
+                      {unidadSeleccionada.estado ===
+                        'OPERATIVA' &&
+                        'Operativa'}
+
+                      {unidadSeleccionada.estado ===
+                        'EN_MANTENIMIENTO' &&
+                        'En mantenimiento'}
+
+                      {unidadSeleccionada.estado ===
+                        'FUERA_DE_SERVICIO' &&
+                        'Fuera de servicio'}
+                    </strong>
+                  </div>
+
+
+                  <div className="detalle-resumen-card">
+                    <span>Activo</span>
+
+                    <strong>
+                      {unidadSeleccionada.activo
+                        ? 'Sí'
+                        : 'No'}
+                    </strong>
+                  </div>
+
+
+                  <div className="detalle-resumen-card">
+                    <span>Año</span>
+
+                    <strong>
+                      {
+                        unidadSeleccionada
+                          .anioFabricacion ??
+                        '-'
+                      }
+                    </strong>
+                  </div>
+
+                </div>
+
+
+                {/* SECCIONES */}
+
+                <div className="detalle-secciones">
+
+                  {/* INFORMACIÓN GENERAL */}
+
+                  <div className="detalle-card">
+
+                    <div className="detalle-card-header">
+                      <h3>
+                        Información general
+                      </h3>
+
+                      <p>
+                        Datos principales de la
+                        unidad.
+                      </p>
+                    </div>
+
+
+                    <div className="detalle-grid">
+
+                      <div>
+                        <span>Placa</span>
+
+                        <strong>
+                          {unidadSeleccionada.placa ||
+                            '-'}
+                        </strong>
+                      </div>
+
+
+                      <div>
+                        <span>Marca</span>
+
+                        <strong>
+                          {unidadSeleccionada.marca ||
+                            '-'}
+                        </strong>
+                      </div>
+
+
+                      <div>
+                        <span>Modelo</span>
+
+                        <strong>
+                          {unidadSeleccionada.modelo ||
+                            '-'}
+                        </strong>
+                      </div>
+
+
+                      <div>
+                        <span>
+                          Tipo de vehículo
+                        </span>
+
+                        <strong>
+                          {
+                            unidadSeleccionada
+                              .tipoVehiculo ||
+                            '-'
+                          }
+                        </strong>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* ESTADO */}
+
+                  <div className="detalle-card">
+
+                    <div className="detalle-card-header">
+
+                      <h3>
+                        Estado de la unidad
+                      </h3>
+
+                      <p>
+                        Condición actual de
+                        operación.
+                      </p>
+
+                    </div>
+
+
+                    <div className="detalle-grid">
+
+                      <div>
+                        <span>
+                          Estado operativo
+                        </span>
+
+                        <strong>
+                          {unidadSeleccionada.estado ===
+                            'OPERATIVA' &&
+                            'Operativa'}
+
+                          {unidadSeleccionada.estado ===
+                            'EN_MANTENIMIENTO' &&
+                            'En mantenimiento'}
+
+                          {unidadSeleccionada.estado ===
+                            'FUERA_DE_SERVICIO' &&
+                            'Fuera de servicio'}
+                        </strong>
+                      </div>
+
+
+                      <div>
+                        <span>Activo</span>
+
+                        <strong>
+                          {unidadSeleccionada.activo
+                            ? 'Sí'
+                            : 'No'}
+                        </strong>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* OBSERVACIONES */}
+
+                  <div className="detalle-card detalle-card-full">
+
+                    <div className="detalle-card-header">
+
+                      <h3>
+                        Observaciones
+                      </h3>
+
+                      <p>
+                        Notas adicionales
+                        registradas para la unidad.
+                      </p>
+
+                    </div>
+
+
+                    <div className="detalle-observaciones-box">
+
+                      {unidadSeleccionada
+                        .observaciones
+                        ?.trim()
+                        ? unidadSeleccionada
+                          .observaciones
+                        : 'No se registraron observaciones.'}
+
+                    </div>
 
                   </div>
 
                 </div>
-              ) : (
-                <>
-                  <div className="detalle-grid">
 
-                    <div>
-                      <span>PAD</span>
-                      <strong>{unidadSeleccionada.codigo}</strong>
-                    </div>
+              </>
 
-                    <div>
-                      <span>Placa</span>
-                      <strong>{unidadSeleccionada.placa}</strong>
-                    </div>
+            )}
 
-                    <div>
-                      <span>Marca</span>
-                      <strong>{unidadSeleccionada.marca}</strong>
-                    </div>
-
-                    <div>
-                      <span>Modelo</span>
-                      <strong>{unidadSeleccionada.modelo}</strong>
-                    </div>
-
-                    <div>
-                      <span>Tipo de vehículo</span>
-                      <strong>{unidadSeleccionada.tipoVehiculo}</strong>
-                    </div>
-
-                    <div>
-                      <span>Año</span>
-                      <strong>
-                        {unidadSeleccionada.anioFabricacion ?? 'Sin registrar'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Estado</span>
-                      <strong>
-                        {unidadSeleccionada.estado === 'OPERATIVA' && 'Operativa'}
-                        {unidadSeleccionada.estado === 'EN_MANTENIMIENTO' && 'En mantenimiento'}
-                        {unidadSeleccionada.estado === 'FUERA_DE_SERVICIO' && 'Fuera de servicio'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Activo</span>
-                      <strong>
-                        {unidadSeleccionada.activo ? 'Sí' : 'No'}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                  <div className="detalle-extra">
-                    <span>Observaciones</span>
-
-                    <p>
-                      {unidadSeleccionada.observaciones ||
-                        'Sin observaciones registradas.'}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
           </div>
         </div>
+      )}
+
+      {modalNuevaUnidad && (
+
+        <div
+          className="modal-overlay"
+          onClick={() =>
+            setModalNuevaUnidad(false)
+          }
+        >
+
+          <div
+            className="modal-unidad modal-nueva-unidad"
+            onClick={
+              e => e.stopPropagation()
+            }
+          >
+
+            <div className="modal-header">
+
+              <div>
+                <h2>Nueva unidad</h2>
+
+                <p>
+                  Registra una nueva unidad
+                  en la flota.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="modal-cerrar"
+                onClick={() =>
+                  setModalNuevaUnidad(false)
+                }
+              >
+                ×
+              </button>
+
+            </div>
+
+
+            <div className="form-edicion">
+
+              <div className="form-grid">
+
+                <label className="campo-formulario">
+                <span>Código PAD *</span>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Ej. 280"
+                  value={formNuevaUnidad.codigo}
+                  onChange={e => {
+                    const valor =
+                      e.target.value.replace(/\D/g, '')
+
+                    setFormNuevaUnidad({
+                      ...formNuevaUnidad,
+                      codigo: valor
+                    })
+                  }}
+                />
+              </label>
+
+                <label className="campo-formulario">
+                  <span>Placa *</span>
+
+                  <input
+                    type="text"
+                    placeholder="Ej. CSM-124"
+                    value={
+                      formNuevaUnidad.placa
+                    }
+                    onChange={e =>
+                      setFormNuevaUnidad({
+                        ...formNuevaUnidad,
+                        placa: e.target.value
+                      })
+                    }
+                  />
+                </label>
+
+
+                <label className="campo-formulario">
+                  <span>
+                    Tipo de vehículo *
+                  </span>
+
+                  <select
+                    value={
+                      formNuevaUnidad.tipoVehiculo
+                    }
+                    onChange={e =>
+                      setFormNuevaUnidad({
+                        ...formNuevaUnidad,
+                        tipoVehiculo:
+                          e.target.value
+                      })
+                    }
+                  >
+                    <option value="BUS">
+                      Bus
+                    </option>
+
+                    <option value="MINIBUS">
+                      Minibus
+                    </option>
+
+                    <option value="OTRO">
+                      Otro
+                    </option>
+                  </select>
+                </label>
+
+                <label className="campo-formulario">
+                  <span>Marca *</span>
+
+                  <select
+                    value={formNuevaUnidad.marcaId}
+                    onChange={async (e) => {
+
+                      const marcaId =
+                        e.target.value
+
+                      setFormNuevaUnidad({
+                        ...formNuevaUnidad,
+                        marcaId,
+                        modeloId: ''
+                      })
+
+                      if (!marcaId) {
+                        setModelos([])
+                        return
+                      }
+
+                      try {
+
+                        const data =
+                          await listarModelos(
+                            Number(marcaId)
+                          )
+
+                        setModelos(data)
+
+                      } catch (error) {
+
+                        console.error(error)
+
+                        setModelos([])
+
+                        setErrorNuevaUnidad(
+                          'No se pudieron cargar los modelos'
+                        )
+                      }
+                    }}
+                  >
+                    <option value="">
+                      Seleccionar marca
+                    </option>
+
+                    {marcas.map(
+                      marca => (
+                        <option
+                          key={marca.id}
+                          value={marca.id}
+                        >
+                          {marca.nombre}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </label>
+
+                <label className="campo-formulario">
+                  <span>Modelo *</span>
+
+                  <select
+                    value={formNuevaUnidad.modeloId}
+                    disabled={
+                      !formNuevaUnidad.marcaId
+                    }
+                    onChange={e =>
+                      setFormNuevaUnidad({
+                        ...formNuevaUnidad,
+                        modeloId:
+                          e.target.value
+                      })
+                    }
+                  >
+                    <option value="">
+                      Seleccionar modelo
+                    </option>
+
+                    {modelos.map(
+                      modelo => (
+                        <option
+                          key={modelo.id}
+                          value={modelo.id}
+                        >
+                          {modelo.nombre}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </label>
+
+
+                <label className="campo-formulario">
+                  <span>
+                    Año de fabricación
+                  </span>
+
+                  <input
+                    type="number"
+                    min="1990"
+                    max={
+                      new Date().getFullYear() + 1
+                    }
+                    placeholder="2026"
+                    value={
+                      formNuevaUnidad
+                        .anioFabricacion
+                    }
+                    onChange={e =>
+                      setFormNuevaUnidad({
+                        ...formNuevaUnidad,
+                        anioFabricacion:
+                          e.target.value
+                      })
+                    }
+                  />
+                </label>
+
+
+                <label className="campo-formulario">
+                  <span>
+                    Estado inicial
+                  </span>
+
+                  <select
+                    value={
+                      formNuevaUnidad.estado
+                    }
+                    onChange={e =>
+                      setFormNuevaUnidad({
+                        ...formNuevaUnidad,
+                        estado:
+                          e.target.value
+                      })
+                    }
+                  >
+                    <option value="OPERATIVA">
+                      Operativa
+                    </option>
+
+                    <option value="EN_MANTENIMIENTO">
+                      En mantenimiento
+                    </option>
+
+                    <option value="FUERA_DE_SERVICIO">
+                      Fuera de servicio
+                    </option>
+                  </select>
+                </label>
+
+              </div>
+
+
+              <label className="campo-formulario campo-observaciones">
+
+                <span>Observaciones</span>
+
+                <textarea
+                  rows={4}
+                  placeholder="Observaciones adicionales..."
+                  value={
+                    formNuevaUnidad.observaciones
+                  }
+                  onChange={e =>
+                    setFormNuevaUnidad({
+                      ...formNuevaUnidad,
+                      observaciones:
+                        e.target.value
+                    })
+                  }
+                />
+
+              </label>
+
+
+              <div className="estado-activo">
+
+                <div>
+                  <strong>
+                    Unidad activa
+                  </strong>
+
+                  <p>
+                    Permite que la unidad aparezca
+                    disponible dentro del sistema.
+                  </p>
+                </div>
+
+                <label className="switch">
+
+                  <input
+                    type="checkbox"
+                    checked={
+                      formNuevaUnidad.activo
+                    }
+                    onChange={e =>
+                      setFormNuevaUnidad({
+                        ...formNuevaUnidad,
+                        activo:
+                          e.target.checked
+                      })
+                    }
+                  />
+
+                  <span className="slider" />
+
+                </label>
+
+              </div>
+
+
+              {errorNuevaUnidad && (
+                <div className="unidad-form-error">
+                  {errorNuevaUnidad}
+                </div>
+              )}
+
+
+              <div className="acciones-edicion">
+
+                <button
+                  type="button"
+                  className="btn-cancelar"
+                  disabled={
+                    guardandoNuevaUnidad
+                  }
+                  onClick={() =>
+                    setModalNuevaUnidad(false)
+                  }
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-guardar"
+                  disabled={
+                    guardandoNuevaUnidad
+                  }
+                  onClick={
+                    guardarNuevaUnidad
+                  }
+                >
+                  {guardandoNuevaUnidad
+                    ? 'Registrando...'
+                    : 'Registrar unidad'}
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
       )}
 
     </div>

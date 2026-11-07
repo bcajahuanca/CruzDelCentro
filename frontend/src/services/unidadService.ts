@@ -1,4 +1,4 @@
-import type { Unidad } from '../types/Unidad'
+import type { CrearUnidadRequest, Marca, ModeloVehiculo, Unidad } from '../types/Unidad'
 import type { UnidadDetalle } from '../types/UnidadDetalle'
 
 const API_URL = import.meta.env.VITE_API_URL + '/api/unidades'
@@ -61,6 +61,87 @@ export const actualizarUnidad = async (
 
   if (!response.ok) {
     throw new Error('No se pudo actualizar la unidad')
+  }
+
+  return response.json()
+}
+
+export async function crearUnidad(
+  request: CrearUnidadRequest
+): Promise<Unidad> {
+
+  const token =
+    localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}`,
+    {
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization:
+          `Bearer ${token}`
+      },
+
+      body: JSON.stringify(request)
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'No se pudo registrar la unidad'
+    )
+  }
+
+  return response.json()
+}
+
+export async function listarMarcas(): Promise<Marca[]> {
+
+  const token =
+    localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/marcas`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'No se pudieron cargar las marcas'
+    )
+  }
+
+  return response.json()
+}
+
+export async function listarModelos(
+  marcaId: number
+): Promise<ModeloVehiculo[]> {
+
+  const token =
+    localStorage.getItem('token')
+
+  const response = await fetch(
+    `${API_URL}/modelos?marcaId=${marcaId}`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'No se pudieron cargar los modelos'
+    )
   }
 
   return response.json()
